@@ -17,23 +17,25 @@
 COPT    = -O2
 COPT2   = -Wall -O2
 CDBG    = -g -DDEBUG
+GLIB    = `pkg-config gtk+-2.0 --cflags --libs`
 CC      = gcc
 LEX     = flex
 YACC    = bison
 #
 # Define the target names
 #
-TARGET_LEX =  tiny.l
-TARGET_BISON= tiny.y
-TARGET_GRAM = tiny_grammar.y
-TARGET_NAME=  tiny
+TARGET_LEX    = tiny.l
+TARGET_BISON  = tiny.y
+TARGET_GRAM   = tiny.y
+TARGET_NAME   = tiny
+TARGET_HELPER = table.c
 #
 # Rule definitions for target builds
 #
 all:
 	$(YACC) -v $(TARGET_GRAM) -o $(TARGET_NAME).tab.c
 	$(LEX) $(TARGET_LEX)
-	$(CC) -DGRAMMAR $(COPT) -o $(TARGET_NAME) $(TARGET_NAME).tab.c -lfl
+	$(CC) -DGRAMMAR $(COPT) $(GLIB) -o $(TARGET_NAME) $(TARGET_HELPER) $(TARGET_NAME).tab.c -lfl
 
 clean:
 	rm -f *~ core lex.yy.c $(TARGET_NAME).tab.* $(TARGET_NAME).output

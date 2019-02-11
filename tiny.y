@@ -1,5 +1,5 @@
 /**
- *  @file tiny_grammar.l
+ *  @file tiny.y
  *  @author  José Rodolfo Verduzco Torres || A01366134 ||
  *  @date 02 October 2018
  *
@@ -12,10 +12,8 @@
  */
 
 %{
-#include <string.h>           // For strcmp, strlen, strcpy
-#include <stdio.h>            // For printf
-#include <glib.h>             // For all hashing functions
-#include <stdlib.h>           // For malloc
+
+#include "table.h"            // Helper file
 
   /* Function definitions */
 void yyerror (char *string);
@@ -29,7 +27,21 @@ extern int line;
 
 %}
 
+%union {
+  int  intVal;
+  float floatVal;
+  char * stringVal;
+  entry_p symp;
+}
+
   /*  *  *  Token Definition  *  *  */
+
+/* NOT YET
+  %token <intVal> INT_NUMBER      // FLOAT_NUMBER is used for float numbers
+  %token <floatVal> FLOAT_NUMBER  // INT_NUMBER is used for decimal numbers
+  %token <stringVal> NAME         // NAME is used for identifier tokens
+  %token <symp> SYMP              // SYMP is used for symbol table entry
+*/
 
  /* Reserved Words*/
 %token INTEGER
@@ -138,5 +150,15 @@ void yyerror (char *string) {
 
 /* Bison does NOT define the main entry point so define it here */
 int main (void) {
+  // Create the hashtable
+  symTable_p  = g_hash_table_new_full(g_str_hash, g_str_equal,
+                                      NULL,
+                                      (GDestroyNotify)freeItem);
+
+  // Perform the parsing
   yyparse();
+
+  printTable();
+  // Destroy the hash table
+  g_hash_table_destroy(symTable_p);
 }

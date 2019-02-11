@@ -80,39 +80,115 @@ unknown [.]
 
 [ \t]                               /* ignore white space */
 
-{int_rw}    { return INTEGER; }
-{float_rw}  { return FLOAT; }
-{if_rw}     { return IF; }
-{then_rw}   { return THEN; }
-{else_rw}   { return ELSE;}
-{while_rw}  { return WHILE; }
-{do_rw}     { return DO; }
-{read_rw}   { return READ; }
-{write_rw}  { return WRITE; }
+{int_rw}    {
+              return INTEGER;
+            }
 
-{semi_pnct}   { return SEMI; }
-{comma_pnct}  { return COMMA; }
-{left_paren}  { return LPAREN; }
-{right_paren} { return RPAREN; }
-{left_brace}  { return LBRACE; }
-{right_brace} { return RBRACE; }
+{float_rw}  {
+              return FLOAT;
+            }
 
+{if_rw}     {
+              return IF;
+            }
 
-{less_than}    { return LT; }
-{equal}        { return EQ; }
-{greater_than} { return GT; }
+{then_rw}   {
+              return THEN;
+            }
 
-{plus}       { return PLUS; }
-{minus}      { return MINUS; }
-{times}      { return TIMES; }
-{division}   { return DIV; }
+{else_rw}   {
+              return ELSE;
+            }
 
-{assignment} { return ASSIGN; }
+{while_rw}  {
+              return WHILE;
+            }
 
-{identifier} { return ID; }
+{do_rw}     {
+              return DO;
+            }
 
-{decimal_number} { return INT_NUM; }
-{real_number}    { return FLOAT_NUM; }
+{read_rw}   {
+              return READ;
+            }
+
+{write_rw}  {
+              return WRITE;
+            }
+
+{semi_pnct} {
+              return SEMI;
+            }
+
+{comma_pnct} {
+                return COMMA;
+             }
+
+{left_paren}  {
+                return LPAREN;
+              }
+
+{right_paren} {
+                return RPAREN;
+              }
+
+{left_brace}  {
+                return LBRACE;
+              }
+
+{right_brace} {
+                return RBRACE;
+              }
+
+{less_than} {
+              return LT;
+            }
+
+{equal} {
+          return EQ;
+        }
+
+{greater_than} {
+                  return GT;
+               }
+
+{plus}       {
+                return PLUS;
+             }
+
+{minus}      {
+                return MINUS;
+             }
+
+{times}      {
+                return TIMES;
+             }
+
+{division}   {
+                return DIV;
+             }
+
+{assignment} {
+                return ASSIGN;
+             }
+
+{identifier} {
+                //yylval.symp = searchSymbol(yytext);
+                addSymbol(yytext);
+                return ID;
+             }
+
+{decimal_number} {
+                    /* NOT YET */
+                    //yylval.intVal = atof(yytext);
+                    return INT_NUM;
+                 }
+
+{real_number}    {
+                    /* NOT YET */
+                    //yylval.floatVal = atof(yytext);
+                    return FLOAT_NUM;
+                 }
 
 \n      { line++; }
 .       { return yytext[0]; }
