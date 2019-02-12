@@ -14,10 +14,44 @@
 
 #include "table.h"
 
+/**
+ *
+ * @brief De-allocates memory assigned to user-defined data structure.
+ *
+ * @b FreeItem will de-allocate the @c string inside the user-defined data
+ * structure @c tableEntry.
+ *
+ * @param  theEntry_p is a pointer to the user-defined data structure.
+ * @return @c EXIT_SUCCESS if the item was de-allocated with no
+ *         problems, otherwise return @c EXIT_FAILURE.
+ *
+ * @code
+ *  FreeItem(theEntry_p);
+ * @endcode
+ *
+ * @warning This function must be passed as a parameter when calling
+ *          DestroyTable() since it will call it to de-allocate the
+ *          user-defined structure.
+ */
 void freeItem (entry_p data) {
+  free(data->name);
   free(data);
 }
 
+/**
+ *
+ * @brief Creates a new symbol and adds it to the hash table.
+ *
+ * @param  identifier_name is the name of the symbol to be added.
+ *
+ * @return @c Returns the node created, or exits the program if.
+ *         the element couldnt be created
+ *
+ * @code
+ *  createSymbol(identifier_name);
+ * @endcode
+ *
+ */
 entry_p createSymbol(char * identifier_name) {
   entry_p node_p;        // Node to be entered in the symbol table
 
@@ -36,17 +70,61 @@ entry_p createSymbol(char * identifier_name) {
   }
 }
 
+/**
+ *
+ * @brief Prints a single eitem from the Table.
+ *
+ * @b printItem will print each field according to the user's formatting.
+ *
+ * @param  theEntry_p is a pointer to a user-defined structure element.
+ *
+ * @code
+ *  printItem(theEntry_p);
+ * @endcode
+ *
+ */
 void printItem(gpointer key, gpointer value, gpointer data) {
 	tableEntry * table_node = (tableEntry *) value;
 	printf("%s\n",table_node->name);
 }
 
+/**
+ *
+ * @brief Prints the contents of the symbol table entry.
+ *
+ * @b printItem will print each field according to the user's formatting.
+ *
+ * @param  theEntry_p is a pointer to a user-defined structure element.
+ *
+ * @return @c EXIT_SUCCESS the item was printed with no
+ *         problems, otherwise return @c EXIT_FAILURE
+ *
+ * @code
+ *  printItem(theEntry_p);
+ * @endcode
+ *
+ */
 void printTable() {
   printf("> > > SYMBOL TABLE < < < \n");
   printf("NAME\n");
   g_hash_table_foreach(symTable_p, (GHFunc)printItem, NULL);
 }
 
+/**
+ *
+ * @brief Performs the actions to add an element to the symbol table
+ *
+ * @b addSymbol is used to select the correct parameters to add to the
+ *    symbol hash table, by first looking up for the symbol to see if
+ *    it exists alredy.
+ *
+ * @param  identifier_name is a string that indicates the name of the
+ *         symbol.
+ * @code
+ *  addSymbol(identifier_name);
+ * @endcode
+ *
+ */
 entry_p addSymbol(char * identifier_name) {
   // lookup for the symbol on the symbol table
   entry_p lookup_symbol = g_hash_table_lookup(symTable_p, identifier_name);
@@ -55,7 +133,6 @@ entry_p addSymbol(char * identifier_name) {
   	return lookup_symbol;
   }
   else {
-    createSymbol(identifier_name);
+    return createSymbol(identifier_name);
   }
-
 }
