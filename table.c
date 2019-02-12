@@ -1,3 +1,17 @@
+/**
+ * Copyright (c) 2019 José Rodolfo Verduzco Torres
+ *
+ * @file    table.h
+ *
+ * @author  José Rodolfo Verduzco Torres
+ *
+ * @date    11 February 2019
+ *
+ * @brief   Declares all the user defined functions for handling the
+ *          specific user-defined data structure that is pointed to
+ *          by the doubly linked list node.
+ */
+
 #include "table.h"
 
 void freeItem (entry_p data) {
@@ -34,15 +48,10 @@ void printTable() {
 }
 
 entry_p addSymbol(char * identifier_name) {
-
-  printf("\n\tTest searching for an existing item for %s\n", identifier_name);
-
-  //printTable();
   // lookup for the symbol on the symbol table
   entry_p lookup_symbol = g_hash_table_lookup(symTable_p, identifier_name);
 
   if (lookup_symbol != NULL) {
-    printf("Found %s", identifier_name);
   	return lookup_symbol;
   }
   else {

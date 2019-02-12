@@ -1,7 +1,7 @@
 /**
  *  @file tiny.y
  *  @author  José Rodolfo Verduzco Torres || A01366134 ||
- *  @date 02 October 2018
+ *  @date 11 February 2019
  *
  *  @brief This program performs the grammar from a tiny c language
  *
@@ -85,7 +85,7 @@ extern int line;
 
  /*  *  *  *  Grammar definition  *  *  *  */
 program: var_dec stmt_seq {
-                            printf("No errors in the Program\n");
+                            printf("No errors in the Program\n\n");
                           };
 
 var_dec: var_dec single_dec
@@ -146,11 +146,12 @@ int yylex();
 /* Bison does NOT implement yyerror, so define it here */
 void yyerror (char *string) {
   printf ("ERROR: %s in line %d\n", string, line);
+  exit(EXIT_FAILURE);
 }
 
 /* Bison does NOT define the main entry point so define it here */
 int main (void) {
-  // Create the hashtable
+  // Create the hash table
   symTable_p  = g_hash_table_new_full(g_str_hash, g_str_equal,
                                       NULL,
                                       (GDestroyNotify)freeItem);
@@ -158,7 +159,9 @@ int main (void) {
   // Perform the parsing
   yyparse();
 
+  // Print the table
   printTable();
+
   // Destroy the hash table
   g_hash_table_destroy(symTable_p);
 }

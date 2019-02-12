@@ -1,3 +1,17 @@
+/**
+ * Copyright (c) 2019 José Rodolfo Verduzco Torres
+ *
+ * @file    table.h
+ *
+ * @author  José Rodolfo Verduzco Torres
+ *
+ * @date    11 February 2019
+ *
+ * @brief   Declares all the user defined functions for handling the
+ *          specific user-defined data structure that is pointed to
+ *          by the doubly linked list node.
+ */
+
 #include <string.h>           // For strcmp, strlen, strcpy
 #include <stdio.h>            // For printf
 #include <glib.h>             // For all hashing functions
@@ -7,7 +21,7 @@
 * Create the hash table, use the variable name (a string) as
 * the hash key. Note that we use the g_hash_table_new_full to
 * handle the deallocation of memory for the data structure
-* through a user defined function (FreeItem)
+* through a user defined function (freeItem)
 */
 GHashTable * symTable_p;
 

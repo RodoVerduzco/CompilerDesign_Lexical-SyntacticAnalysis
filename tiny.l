@@ -1,7 +1,7 @@
  /**
   *  @file tiny.l
   *  @author  José Rodolfo Verduzco Torres || A01366134 ||
-  *  @date 02 October 2018
+  *  @date 11 February 2019
   *
   *  @brief This program performs a lexical analysis on a c program
   *
