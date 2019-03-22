@@ -40,6 +40,14 @@ union num_val {              /* Note that both values are 32-bits in length */
 };
 
 /**
+ * @enum myTypes
+ *
+ * @brief Enum to describe the type of the variable stored into the symbol
+ *        table
+ */
+enum myTypes{ INT, FLT };
+
+/**
  * @struct symTable
  *
  * @brief This is the user-defined symbol table entry.
@@ -55,9 +63,9 @@ union num_val {              /* Note that both values are 32-bits in length */
  *
  */
 typedef struct symTable {
-   char           * name;                /**< The name is just the string */
-   union num_val    value;         /**< Value of the symbol table element */
-   //enum myTypes     type;                          /**< Identifier type */
+   char           * name;               /** < The name is just the string */
+   union num_val    value;        /** < Value of the symbol table element */
+   enum myTypes     type;                           /** < Identifier type */
 } tableEntry;
 
 /**
@@ -66,7 +74,6 @@ typedef struct symTable {
  * @brief declare a pointer to the @c symTable @c structure
  */
 typedef struct symTable * entry_p;   /**< Declaration of ptr to an entry */
-
 
 /* * * * * * *  Function Declarations  * * * * * * * */
 
@@ -89,7 +96,9 @@ typedef struct symTable * entry_p;   /**< Declaration of ptr to an entry */
  * @endcode
  *
  */
-entry_p addSymbol(char * identifier_name);
+entry_p addSymbol(int type, char * identifier_name);
+
+entry_p lookSymbol(char * identifier_name);
 
 /**
  *
@@ -138,4 +147,8 @@ void printItem (gpointer key, gpointer value, gpointer data);
  *          DestroyTable() since it will call it to de-allocate the
  *          user-defined structure.
  */
-void freeItem (entry_p data);
+int freeItem (entry_p data);
+
+entry_p createTempConstant(union num_val value, enum myTypes type);
+
+void updateSymbol(char * identifier_name, enum myTypes type, union num_val value);

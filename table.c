@@ -33,9 +33,10 @@
  *          DestroyTable() since it will call it to de-allocate the
  *          user-defined structure.
  */
-void freeItem (entry_p data) {
+int freeItem (entry_p data) {
   free(data->name);
   free(data);
+  return(EXIT_SUCCESS);
 }
 
 /**
@@ -43,6 +44,7 @@ void freeItem (entry_p data) {
  * @brief Creates a new symbol and adds it to the hash table.
  *
  * @param  identifier_name is the name of the symbol to be added.
+ * @param  type refers to the enum type of the symbol.
  *
  * @return @c Returns the node created, or exits the program if.
  *         the element couldnt be created
@@ -52,13 +54,22 @@ void freeItem (entry_p data) {
  * @endcode
  *
  */
-entry_p createSymbol(char * identifier_name) {
+entry_p createSymbol(int type, char * identifier_name) {
   entry_p node_p;        // Node to be entered in the symbol table
 
   // Create new table node
   tableEntry * new_node = (tableEntry *) malloc(sizeof(tableEntry));
 
   new_node->name = g_strdup(identifier_name);
+  new_node->type = type;
+
+  /* Initialize every variable as 0*/
+	if(type == INT)
+		new_node->value.integer_value = 0;
+	else
+		new_node->value.float_value = 0.0;
+
+
   /* Will add the value and type correcty in a more advanced implementation */
   //new_node->value = 0;
   if(g_hash_table_insert(symTable_p, new_node->name, new_node)) {
@@ -85,7 +96,18 @@ entry_p createSymbol(char * identifier_name) {
  */
 void printItem(gpointer key, gpointer value, gpointer data) {
 	tableEntry * table_node = (tableEntry *) value;
-	printf("%s\n",table_node->name);
+
+  char type[15] ;
+
+  if(table_node->type == INT) {
+    sprintf(type, "integer");
+    printf("%s \t %s \t \n",table_node->name, type);
+  }
+  else {
+    sprintf(type, "float");
+    printf("%s \t %s \t \n",table_node->name, type);
+  }
+
 }
 
 /**
@@ -106,7 +128,7 @@ void printItem(gpointer key, gpointer value, gpointer data) {
  */
 void printTable() {
   printf("> > > SYMBOL TABLE < < < \n");
-  printf("NAME\n");
+  printf("NAME \t TYPE \t\n");
   g_hash_table_foreach(symTable_p, (GHFunc)printItem, NULL);
 }
 
@@ -120,19 +142,59 @@ void printTable() {
  *
  * @param  identifier_name is a string that indicates the name of the
  *         symbol.
+ * @param  type refers to the enum type of the symbol.
+ *
  * @code
  *  addSymbol(identifier_name);
  * @endcode
  *
  */
-entry_p addSymbol(char * identifier_name) {
+entry_p addSymbol(int type, char * identifier_name) {
   // lookup for the symbol on the symbol table
   entry_p lookup_symbol = g_hash_table_lookup(symTable_p, identifier_name);
 
-  if (lookup_symbol != NULL) {
-  	return lookup_symbol;
+  if (lookup_symbol == NULL) {
+    createSymbol(type, identifier_name);
+  }
+
+  return lookup_symbol;
+
+}
+
+
+entry_p lookSymbol(char * identifier_name) {
+  entry_p lookup_symbol = g_hash_table_lookup(symTable_p, identifier_name);
+
+  if(lookup_symbol != NULL){
+    return lookup_symbol;
   }
   else {
-    return createSymbol(identifier_name);
+    return NULL;
   }
+}
+
+void updateSymbol(char * identifier_name, enum myTypes type, union num_val value) {
+	entry_p node = g_hash_table_lookup(symTable_p, identifier_name);
+	if(node != NULL) {
+		node->type = type;
+		node->value = value;
+	}
+}
+
+entry_p createTempConstant(union num_val value, enum myTypes type) {
+  char * temp = malloc(sizeof(char *));
+  char * c = malloc(sizeof(char *));
+
+  int i=0;
+  // Assign the correct temp name
+  do {
+    sprintf(temp, "t");
+    snprintf(c, sizeof(char *), "%d", i);
+    strcat(temp, c);
+    i++;
+  } while (lookSymbol(temp) != NULL);
+
+  createSymbol(type, temp);
+  updateSymbol(temp, type, value);
+
 }

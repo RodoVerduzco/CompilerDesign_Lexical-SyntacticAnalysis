@@ -15,7 +15,7 @@
 # Define the compiler optimization flags
 #
 COPT    = -O2
-COPT2   = -Wall -O2
+COPT2   = -Wall -Wother -O2
 CDBG    = -g -DDEBUG
 GLIB    = `pkg-config gtk+-2.0 --cflags --libs`
 CC      = gcc

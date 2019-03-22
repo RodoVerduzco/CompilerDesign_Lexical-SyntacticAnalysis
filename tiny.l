@@ -14,7 +14,7 @@
   *
   */
 %{
-  int line = 0;
+  int line = 1;
 %}
 
  /* Define the regular expresions to be used */
@@ -81,10 +81,12 @@ unknown [.]
 [ \t]                               /* ignore white space */
 
 {int_rw}    {
+              yylval.stringVal = strdup(yytext);
               return INTEGER;
             }
 
 {float_rw}  {
+              yylval.stringVal = strdup(yytext);
               return FLOAT;
             }
 
@@ -173,20 +175,19 @@ unknown [.]
              }
 
 {identifier} {
-                //yylval.symp = searchSymbol(yytext);
-                addSymbol(yytext);
+                yylval.stringVal = strdup(yytext);
                 return ID;
              }
 
 {decimal_number} {
                     /* NOT YET */
-                    //yylval.intVal = atof(yytext);
+                    yylval.intVal = atof(yytext);
                     return INT_NUM;
                  }
 
 {real_number}    {
                     /* NOT YET */
-                    //yylval.floatVal = atof(yytext);
+                    yylval.floatVal = atof(yytext);
                     return FLOAT_NUM;
                  }
 
