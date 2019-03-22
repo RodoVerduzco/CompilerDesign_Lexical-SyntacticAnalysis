@@ -1,3 +1,4 @@
 test_files/*
 *.tab.*
 *.output
+*.yy.c
