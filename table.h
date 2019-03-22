@@ -98,6 +98,22 @@ typedef struct symTable * entry_p;   /**< Declaration of ptr to an entry */
  */
 entry_p addSymbol(int type, char * identifier_name);
 
+
+/**
+ *
+ * @brief Looks for an identifier in the symbol table
+ *
+ * @b lookSymbol is used to search for a variable in the symbol table
+ *    by searching for an specific identifier name into the hashtable
+ *
+ * @param  identifier_name is a string that indicates the name of the
+ *         symbol.
+ *
+ * @code
+ *  lookSymbol(identifier_name);
+ * @endcode
+ *
+ */
 entry_p lookSymbol(char * identifier_name);
 
 /**
@@ -149,6 +165,44 @@ void printItem (gpointer key, gpointer value, gpointer data);
  */
 int freeItem (entry_p data);
 
+/**
+ *
+ * @brief Creates a new temporary constant
+ *
+ * @b The createTempConstant creates a new temporary constant and adds it
+ *    to the symbol table for better handling the operations within the
+ *    code
+ *
+ * @param  value is the numerical value to be assigned to the temp (either
+ *         integer_value or float_value)
+ *         type is the enum containing the type for the constant (either FLT
+ *         or INT)
+ *
+ * TODO: Handle the usage of temps
+ *
+ * @code
+ *  createTempConstant(12.12, FLT);
+ * @endcode
+ *
+ */
 entry_p createTempConstant(union num_val value, enum myTypes type);
 
+/**
+ *
+ * @brief Updates a symbol's information
+ *
+ * @b The updateSymbol function looks for the symbol in the hashtable
+ *    and then updates the information contained
+ *
+ * @param  identifier_name is a string that indicates the name of the
+ *         symbol.
+ *         type is the enum type of the symbol (either INT [0] of FLT [1])
+ *         value is the contained value for that variable (has the fields
+*          integer_value and float_value)
+ *
+ * @code
+ *  updateSymbol(identifier_name, FLT, 12.12);
+ * @endcode
+ *
+ */
 void updateSymbol(char * identifier_name, enum myTypes type, union num_val value);
