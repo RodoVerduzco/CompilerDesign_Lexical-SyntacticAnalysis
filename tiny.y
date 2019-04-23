@@ -16,13 +16,18 @@
 #include "table.h"            // Helper file
 
   /* Function definitions */
-void yyerror (char *string);
-void typeError(int line, entry_p data);
 extern int line;
 extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
+
+void yyerror (char *string);
+void typeError(int line, entry_p data);
+int quadLineIncrement();
+
 int errors = 0;
+int quadLine = 0;
+
 
  /* Removes the warning of yylex() not defined when using C99 */
 #if YYBISON
@@ -37,6 +42,7 @@ int errors = 0;
   float   floatVal;
   char *  stringVal;
   entry_p symTab;
+  int     lineNumber;
 }
 
   /*  *  *  Token Definition  *  *  */
@@ -96,7 +102,7 @@ var_dec:                                    { /* epsilon */ }
       ;
 
 single_dec: type ID SEMI                    {
-                                              if(addSymbol($1, $2)) {
+                                              if(addSymbol($1, $2, line)) {
                                                 printf("Warning [%d]: Variable '%s' alredy defined\n" ,line, $2);
                                               }
                                             };
@@ -308,6 +314,12 @@ void typeError(int line, entry_p data){
   printf("ERROR [%d]: inconsistent type for %s \n", line, data->name);
   errors ++;
   exit(EXIT_FAILURE);
+}
+
+int quadLineIncrement() {
+  int prevQuad = quadLine;
+  quadLine ++;
+  return prevQuad;
 }
 
 /* Bison does NOT define the main entry point so define it here */
