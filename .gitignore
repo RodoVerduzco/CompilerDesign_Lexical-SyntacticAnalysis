@@ -3,3 +3,4 @@ test_files/*
 *.output
 *.yy.c
 .vscode/
+Makefile.sh

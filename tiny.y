@@ -102,7 +102,7 @@ var_dec: %empty                             {  /* epsilon */  }
          ;
 
 single_dec: type ID SEMI                    {
-                                              if(addSymbol($1, $2)) {
+                                              if(addSymbol($1, $2, line)) {
                                                 printf("Warning [%d]: Variable '%s' alredy defined\n" ,line, $2);
                                               }
                                             }
