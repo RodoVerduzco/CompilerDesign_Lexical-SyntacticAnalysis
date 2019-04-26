@@ -88,7 +88,7 @@ typedef struct lineStruct {
   union num_val value;
 } line_st;
 
-typedef struct lineStruct * line_p ;
+typedef struct lineStruct * line_p;
 
 typedef struct quad_ {
   char op;
