@@ -12,9 +12,9 @@
  *          by the doubly linked list node.
  */
 
+#include <glib.h>							// For all hashing functions
 #include <string.h>           // For strcmp, strlen, strcpy
 #include <stdio.h>            // For printf
-#include <glib.h>             // For all hashing functions
 #include <stdlib.h>           // For malloc
 
 /**
