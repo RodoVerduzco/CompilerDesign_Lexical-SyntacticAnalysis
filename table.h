@@ -25,6 +25,8 @@
  */
 GHashTable * symTable_p;
 
+int lineC;
+
 /**
  * @union num_val
  *
@@ -66,14 +68,36 @@ typedef struct symTable {
    char           * name;               /** < The name is just the string */
    union num_val    value;        /** < Value of the symbol table element */
    enum myTypes     type;                           /** < Identifier type */
+   int              lineNo;
 } tableEntry;
 
+
+
 /**
- * @typedef entry_p
+ * @typedef entry_pGList * quadList = NULL;
  *
  * @brief declare a pointer to the @c symTable @c structure
  */
 typedef struct symTable * entry_p;   /**< Declaration of ptr to an entry */
+
+/****   FOR QUADS  *****/
+typedef struct lineStruct {
+  int quad;
+  char * name;
+  enum myTypes type;
+  union num_val value;
+} line_st;
+
+typedef struct lineStruct * line_p ;
+
+typedef struct quad_ {
+  char op;
+  char * arg1;
+  char * arg2;
+  char * dest;
+} quad;
+
+typedef struct quad_ * quad_p;
 
 /* * * * * * *  Function Declarations  * * * * * * * */
 
@@ -96,7 +120,7 @@ typedef struct symTable * entry_p;   /**< Declaration of ptr to an entry */
  * @endcode
  *
  */
-entry_p addSymbol(int type, char * identifier_name);
+entry_p addSymbol(int type, char * identifier_name, int lineNumber);
 
 
 /**
@@ -206,3 +230,13 @@ entry_p createTempConstant(union num_val value, enum myTypes type);
  *
  */
 void updateSymbol(char * identifier_name, enum myTypes type, union num_val value);
+
+line_p newQuad(char op, char* arg1, char* arg2, char* dest);
+
+GList * NewList(int quad);
+
+int PrintItemQuads(quad_p quad);
+
+int PrintQuads();
+
+void SupportPrintQuads(gpointer data, gpointer user_data);

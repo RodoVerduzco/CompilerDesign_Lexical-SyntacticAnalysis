@@ -14,6 +14,8 @@
 
 #include "table.h"
 
+GList * quadList = NULL;
+
 /**
  *
  * @brief De-allocates memory assigned to user-defined data structure.
@@ -45,6 +47,7 @@ int freeItem (entry_p data) {
  *
  * @param  identifier_name is the name of the symbol to be added.
  * @param  type refers to the enum type of the symbol.
+ * @param  lineNumber refers to the line where the symbol was defined.
  *
  * @return @c Returns the node created, or exits the program if.
  *         the element couldnt be created
@@ -54,7 +57,7 @@ int freeItem (entry_p data) {
  * @endcode
  *
  */
-entry_p createSymbol(int type, char * identifier_name) {
+entry_p createSymbol(int type, char * identifier_name, unsigned int lineNumber) {
   entry_p node_p;        // Node to be entered in the symbol table
 
   // Create new table node
@@ -62,6 +65,7 @@ entry_p createSymbol(int type, char * identifier_name) {
 
   new_node->name = g_strdup(identifier_name);
   new_node->type = type;
+  new_node->lineNo = lineNumber;
 
   /* Initialize every variable as 0*/
 	if(type == INT)
@@ -149,12 +153,12 @@ void printTable() {
  * @endcode
  *
  */
-entry_p addSymbol(int type, char * identifier_name) {
+entry_p addSymbol(int type, char * identifier_name, int lineNumber) {
   // lookup for the symbol on the symbol table
   entry_p lookup_symbol = g_hash_table_lookup(symTable_p, identifier_name);
 
   if (lookup_symbol == NULL) {
-    createSymbol(type, identifier_name);
+    createSymbol(type, identifier_name, lineNumber);
   }
 
   return lookup_symbol;
@@ -235,18 +239,55 @@ void updateSymbol(char * identifier_name, enum myTypes type, union num_val value
  */
 entry_p createTempConstant(union num_val value, enum myTypes type) {
   char * temp = malloc(sizeof(char *));
-  char * c = malloc(sizeof(char *));
+
 
   int i=0;
   // Assign the correct temp name
   do {
-    sprintf(temp, "t");
-    snprintf(c, sizeof(char *), "%d", i);
-    strcat(temp, c);
+    snprintf(temp, sizeof(char *), "%td", i);
     i++;
   } while (lookSymbol(temp) != NULL);
 
-  createSymbol(type, temp);
+  createSymbol(type, temp, 0);
   updateSymbol(temp, type, value);
+}
 
+line_p newQuad(char op, char* arg1, char* arg2, char* dest) {
+  // Create quad
+  quad_p quadItem = (quad_p) malloc(sizeof(quad));
+
+  // Set Quad Values
+  quadItem->op = op;
+  quadItem->arg1 = arg1;
+  quadItem->arg2 = arg2;
+  quadItem->dest = dest;
+
+  // Append Quad to the list
+  quadList = g_list_append(quadList, quadItem);
+
+  PrintQuads();
+}
+
+int PrintQuads()
+{
+  printf("QUAD------DEST-----OP-----ARG1-----ARG2-----|\n");
+  if(quadList)
+  g_list_foreach(quadList, (GFunc)SupportPrintQuads, NULL);
+  //return (EXIT_SUCCESS);
+}
+/*
+Support function needed by GLib
+ */
+void SupportPrintQuads(gpointer data, gpointer user_data)
+{
+  PrintItemQuads(data);
+}
+
+/*
+ Actual printing
+ */
+
+int PrintItemQuads(quad_p quad){
+printf(" %2d   %7s   %5c   %6.5s     %4.5s     |\n",lineC++, quad->dest, quad->op, quad->arg1, quad->arg2);
+  return 1;
 }
