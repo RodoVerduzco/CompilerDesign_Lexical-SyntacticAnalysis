@@ -116,7 +116,7 @@ stmt_seq: %empty                            { /* epsilon */ }
           |stmt_seq M stmt                  {  }
           ;
 
-stmt:   IF exp THEN M stmt                  {  }
+stmt:   IF exp %prec THEN M stmt M          {  }
       | IF exp THEN M stmt N ELSE M stmt    {  }
       | WHILE M exp DO M stmt               {  }
       | variable ASSIGN exp SEMI            {  }
