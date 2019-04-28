@@ -25,6 +25,8 @@
  */
 GHashTable * symTable_p;
 
+GArray * quadArray_p;
+
 int lineC;
 
 /**
@@ -86,18 +88,35 @@ typedef struct lineStruct {
   char * name;
   enum myTypes type;
   union num_val value;
+  GList * true;
+  GList * false;
 } line_st;
 
 typedef struct lineStruct * line_p ;
 
 typedef struct quad_ {
-  char op;
+  int op;
   char * arg1;
   char * arg2;
   char * dest;
+  int addr;
 } quad;
 
 typedef struct quad_ * quad_p;
+
+enum operation{
+    ADDITION,
+    SUBSTRACTION,
+    MULTIPLICATION,
+    DIVISION,
+    LT_GOTO,
+    GT_GOTO,
+    EQ_GOTO,
+    GOTO,
+    ASSIGNMENT
+};
+
+int nextQuad;
 
 /* * * * * * *  Function Declarations  * * * * * * * */
 
@@ -229,11 +248,11 @@ entry_p createTempConstant(union num_val value, enum myTypes type);
  * @endcode
  *
  */
-void updateSymbol(char * identifier_name, enum myTypes type, union num_val value);
+entry_p updateSymbol(char * identifier_name, enum myTypes type, union num_val value);
 
-line_p newQuad(char op, char* arg1, char* arg2, char* dest);
+quad_p newQuad(int op, char* arg1, char* arg2, char * dest);
 
-GList * NewList(int quad);
+GList * newList(GList * list, quad_p quadItem);
 
 int PrintItemQuads(quad_p quad);
 

@@ -22,11 +22,8 @@ extern FILE *yyin;
 
 void yyerror(char *string);
 void typeError(int line, entry_p data);
-int quadLineIncrement();
 
 int errors = 0;
-int quadLine = 0;
-
 
  /* Removes the warning of yylex() not defined when using C99 */
 #if YYBISON
@@ -87,9 +84,10 @@ int quadLine = 0;
 %nonassoc THEN
 %nonassoc ELSE
 
-%type <intVal> type;
-%type <linePoint>M N
-%type <symTab> variable factor term simple_exp exp stmt_seq block stmt;
+%type <intVal> type M;
+%type <symTab> variable factor term simple_exp stmt_seq block stmt;
+%type <linePoint> exp N;
+/*%type <symTab> variable factor term simple_exp exp stmt_seq block stmt;*/
 %%
 
  /*  *  *  *  Grammar definition  *  *  *  */
@@ -113,11 +111,26 @@ type:   INTEGER                             { $$ = INT; }
       ;
 
 stmt_seq: %empty                            { /* epsilon */ }
-          |stmt_seq M stmt                  {  }
+          |stmt_seq stmt                    {  }
           ;
 
-stmt:   IF exp %prec THEN M stmt M          {  }
-      | IF exp THEN M stmt N ELSE M stmt    {  }
+stmt:   IF exp %prec THEN M stmt            {
+                                              /*
+                                               * Code
+                                               *    backpatch(E.t, M.quad)
+                                               *    S.next = merge(E.f, S.next))
+                                               *
+                                               */
+                                            }
+      | IF exp THEN M stmt N ELSE M stmt    {
+                                              /*
+                                               * Code
+                                               *    backpatch(E.t, M1.quad)
+                                               *    backpatch(E.f, M2.quad)
+                                               *    S.next = merge(S1.next, merge(N.next, S2.next))
+                                               *
+                                               */
+                                            }
       | WHILE M exp DO M stmt               {  }
       | variable ASSIGN exp SEMI            {  }
                                             {
@@ -134,6 +147,9 @@ stmt:   IF exp %prec THEN M stmt M          {  }
                                                 // ASSIGN to
                                               }
                                               else {
+                                                printf("INT %d   FLT  %d\n", INT, FLT);
+
+                                                printf("%d", $3->type);
                                                 typeError(line, $1);
                                               }
 
@@ -146,34 +162,77 @@ stmt:   IF exp %prec THEN M stmt M          {  }
 block : LBRACE stmt_seq RBRACE              {  }
       ;
 
-exp: simple_exp LT simple_exp               {  }
-      | simple_exp EQ simple_exp            {  }
-      | simple_exp                          {  }
+exp: simple_exp LT simple_exp               {
+                                              /*
+                                               * Code:
+                                               *     E.t = newList(nextQuad)
+                                               *     E.f = newList(nextQuad +1)
+                                               *     gen(if id1.place < id2.place goto_)
+                                               *     get(goto_)
+                                               */
+                                               $$ = (line_p) malloc(sizeof(line_st));
+
+                                               // Create the Quads
+                                               quad_p quadItem = newQuad(GT_GOTO, $1->name, $3->name, "goto_");
+                                               $$->true  = newList($$->true, quadItem);
+
+                                               quadItem = newQuad(GOTO, "NULL", "NULL", "goto_");
+                                               $$->false = newList($$->false, quadItem);
+                                            }
+      | simple_exp EQ simple_exp            {
+                                                                                            /*
+                                               * Code:
+                                               *     E.t = newList(nextQuad)
+                                               *     E.f = newList(nextQuad +1)
+                                               *     gen(if id1.place < id2.place goto_)
+                                               *     get(goto_)
+                                               */
+                                               $$ = (line_p) malloc(sizeof(line_st));
+
+                                               // Create the Quads
+                                               quad_p quadItem = newQuad(GT_GOTO, $1->name, $3->name, "goto_");
+                                               $$->true  = newList($$->true, quadItem);
+
+                                               quadItem = newQuad(GOTO, "NULL", "NULL", "goto_");
+                                               $$->false = newList($$->false, quadItem);
+                                            }
+      | simple_exp GT simple_exp            {
+                                                                                            /*
+                                               * Code:
+                                               *     E.t = newList(nextQuad)
+                                               *     E.f = newList(nextQuad +1)
+                                               *     gen(if id1.place < id2.place goto_)
+                                               *     get(goto_)
+                                               */
+                                               $$ = (line_p) malloc(sizeof(line_st));
+
+                                               // Create the Quads
+                                               quad_p quadItem = newQuad(GT_GOTO, $1->name, $3->name, "goto_");
+                                               $$->true  = newList($$->true, quadItem);
+
+                                               quadItem = newQuad(GOTO, "NULL", "NULL", "goto_");
+                                               $$->false = newList($$->false, quadItem);
+                                            }
+      | LPAREN simple_exp RPAREN            { $$ = $2; }
       ;
 
 simple_exp: simple_exp PLUS term            {
-                                              //$$ = line_p = malloc(sizeof(line_));
+                                              entry_p temp = NULL;
 
                                               // Type Checking
                                               if(($1->type==INT) && ($3->type==INT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
 
-                                                // Set quad Type
-                                                $$->type = INT;
-
                                                 // Create Temp
-                                                createTempConstant(value, INT);
+                                                temp = createTempConstant(value, INT);
                                               }
                                               else if(($1->type==FLT) && ($3->type==FLT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
 
-                                                // Set quad Type
-                                                $$->type = FLT;
-
                                                 // Create Temp
-                                                createTempConstant(value, FLT);
+                                                temp = createTempConstant(value, FLT);
                                               }
                                               // Coersion
                                               else {
@@ -182,21 +241,15 @@ simple_exp: simple_exp PLUS term            {
                                                     union num_val value;
                                                     value.float_value = 0;
 
-                                                    // Set quad Type
-                                                    $$->type = FLT;
-
                                                     // Create Temp
-                                                    createTempConstant(value, FLT);
+                                                    temp = createTempConstant(value, FLT);
                                                   }
                                                   if(($1->type==INT) && ($3->type==FLT)) {
                                                     union num_val value;
                                                     value.float_value = 0;
 
-                                                    // Set quad Type
-                                                    $$->type = FLT;
-
                                                     // Create Temp
-                                                    createTempConstant(value, FLT);
+                                                    temp = createTempConstant(value, FLT);
                                                   }
                                                 }
                                                 else {
@@ -204,8 +257,9 @@ simple_exp: simple_exp PLUS term            {
                                                 }
                                               }
 
-                                              newQuad('+', $1->name, $3->name, $$->name);
-                                              quadLineIncrement();
+                                              $$ = temp;
+
+                                              //newQuad('+', $1->name, $3->name, $$->name);
                                             }
       | simple_exp MINUS term               {
                                               if(($1->type==INT) && ($3->type==INT)) {
@@ -238,7 +292,7 @@ simple_exp: simple_exp PLUS term            {
                                                 }
                                               }
                                             }
-      | term                                { $$ = $1; }
+      | term                                { $$ = $1;}
       ;
 
 term: term TIMES factor                     {
@@ -296,7 +350,7 @@ term: term TIMES factor                     {
                                               }
                                             }
 
-      | factor                              {  }
+      | factor                              { $$ = $1; }
       ;
 
 factor: LPAREN exp RPAREN                   {  }
@@ -328,19 +382,22 @@ variable: ID                                {
         ;
   /* Backpatching grammar */
   M: %empty                                 {
-                                                // M.quad = nextQuad
-                                                $$ = (line_p) malloc(sizeof(line_st));
-                                                $$->quad = quadLine;
+                                                // Add the quad address
+                                                // Code:
+                                                //    M.quad = nextQuad
+                                                $$ = nextQuad;
                                             }
          ;
 
   N: %empty                                 {
-                                                // N.next_list = newList(nextQuad)
-                                                // gen('goto _')
+                                                // Code:
+                                                //    N.next_list = newList(nextQuad)
+                                                //    gen('goto _')
                                                 $$ = (line_p) malloc(sizeof(line_st));
-                                                //$$->nextList = NewList(quadLine);
-                                                newQuad('j', "", "", "goto_");
-                                                quadLineIncrement();
+
+                                                quad_p quadItem = newQuad(GOTO, NULL, NULL, "goto_");
+                                                $$->true  = newList($$->true, quadItem);
+
                                             };
 
 %%
@@ -363,12 +420,6 @@ void typeError(int line, entry_p data){
   exit(EXIT_FAILURE);
 }
 
-int quadLineIncrement() {
-  int prevQuad = quadLine;
-  quadLine ++;
-  return prevQuad;
-}
-
 /* Bison does NOT define the main entry point so define it here */
 int main (void) {
   // Create the hash table
@@ -376,11 +427,18 @@ int main (void) {
                                       NULL,
                                       (GDestroyNotify)freeItem);
 
+  quadArray_p = g_array_new(FALSE,
+                            FALSE,
+                            sizeof(quad));
+
   // Perform the parsing
   yyparse();
 
   // Print the table
   printTable();
+
+
+  PrintQuads();
 
   // Destroy the hash table
   g_hash_table_destroy(symTable_p);

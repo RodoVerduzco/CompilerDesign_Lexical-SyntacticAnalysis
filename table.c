@@ -14,8 +14,6 @@
 
 #include "table.h"
 
-GList * quadList = NULL;
-
 /**
  *
  * @brief De-allocates memory assigned to user-defined data structure.
@@ -209,12 +207,13 @@ entry_p lookSymbol(char * identifier_name) {
  * @endcode
  *
  */
-void updateSymbol(char * identifier_name, enum myTypes type, union num_val value) {
+entry_p updateSymbol(char * identifier_name, enum myTypes type, union num_val value) {
 	entry_p node = g_hash_table_lookup(symTable_p, identifier_name);
 	if(node != NULL) {
 		node->type = type;
 		node->value = value;
 	}
+  return node;
 }
 
 /**
@@ -240,47 +239,71 @@ void updateSymbol(char * identifier_name, enum myTypes type, union num_val value
 entry_p createTempConstant(union num_val value, enum myTypes type) {
   char * temp = malloc(sizeof(char *));
 
-
   int i=0;
   // Assign the correct temp name
   do {
-    snprintf(temp, sizeof(char *), "%td", i);
+    snprintf(temp, sizeof(char *), "t%d", i);
     i++;
   } while (lookSymbol(temp) != NULL);
 
   createSymbol(type, temp, 0);
-  updateSymbol(temp, type, value);
+  return updateSymbol(temp, type, value);
 }
 
-line_p newQuad(char op, char* arg1, char* arg2, char* dest) {
+quad_p newQuad(int op, char* arg1, char* arg2, char * dest) {
   // Create quad
   quad_p quadItem = (quad_p) malloc(sizeof(quad));
-
   // Set Quad Values
-  quadItem->op = op;
-  quadItem->arg1 = arg1;
-  quadItem->arg2 = arg2;
-  quadItem->dest = dest;
+  quadItem->op   = op;
+  quadItem->arg1 = arg1?arg1:"NULL";
+  quadItem->arg2 = arg2?arg2:"NULL";
+  quadItem->dest = dest?dest:"NULL";
+  quadItem->addr = nextQuad;
 
-  // Append Quad to the list
-  quadList = g_list_append(quadList, quadItem);
+  nextQuad ++;
 
-  PrintQuads();
+  quadArray_p = g_array_append_val(quadArray_p, quadItem);
+
+  return quadItem;
 }
+
+GList * newList(GList * list, quad_p quadItem){
+  list = g_list_append(list, quadItem);
+
+  return list;
+}
+
 
 int PrintQuads()
 {
-  printf("QUAD------DEST-----OP-----ARG1-----ARG2-----|\n");
-  if(quadList)
-  g_list_foreach(quadList, (GFunc)SupportPrintQuads, NULL);
-  //return (EXIT_SUCCESS);
+  /********
+   *
+   *
+   * !!!!!!!!!!1CHECK SEGMENTATION FAULT ON SECOND ITERATION !!!!!!!!!!!
+   *
+   *
+   *
+   *
+   * *******/
+
+
+  printf("\n\nAdd  -  Operator  -  Source1  -  Source2  -  Destination\n");
+
+  for (int i=0; i<quadArray_p->len; i++) {
+    quad_p item = g_array_index(quadArray_p, quad_p, i);
+    printf("%d", item->addr);
+    // printf("%2d %11s %11d %10s %12s\n", item->addr,
+    //                                     item->dest?item->dest:" ",
+    //                                     item->op, item->arg1?item->arg1:" ",
+    //                                     item->arg2?item->arg2:" ");
+  }
 }
 /*
 Support function needed by GLib
  */
 void SupportPrintQuads(gpointer data, gpointer user_data)
 {
-  PrintItemQuads(data);
+  //PrintItemQuads(data);
 }
 
 /*
