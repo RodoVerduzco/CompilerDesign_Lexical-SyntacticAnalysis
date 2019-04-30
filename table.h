@@ -73,8 +73,6 @@ typedef struct symTable {
    int              lineNo;
 } tableEntry;
 
-
-
 /**
  * @typedef entry_pGList * quadList = NULL;
  *

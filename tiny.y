@@ -14,13 +14,15 @@
 %{
 
 #include "table.h"            // Helper file
+#define  YYERROR_VERBOSE
+
   /* Function definitions */
 extern int line;
 extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
 
-void yyerror(char *string);
+void yyerror(char const * string);
 void typeError(int line, entry_p data);
 
 int errors = 0;
@@ -132,9 +134,9 @@ stmt:   IF exp %prec THEN M stmt            {
                                                */
                                             }
       | WHILE M exp DO M stmt               {  }
-      | variable ASSIGN exp SEMI            {  }
+      | variable ASSIGN simple_exp SEMI     {  }
                                             {
-                                               if(($1->type == FLT) && ($3->type == FLT)) {
+                                              if(($1->type == FLT) && ($3->type == FLT)) {
                                                  union num_val value;
                                                  value.float_value = 0;
                                                  $$ = createTempConstant(value, FLT);
@@ -142,14 +144,14 @@ stmt:   IF exp %prec THEN M stmt            {
                                               }
                                               else if(($1->type == INT)&& ($3->type == INT)) {
                                                 union num_val value;
-                                                value.float_value = 0;
+                                                value.integer_value = 0;
                                                 $$ = createTempConstant(value, INT);
                                                 // ASSIGN to
                                               }
                                               else {
                                                 printf("INT %d   FLT  %d\n", INT, FLT);
-
                                                 printf("%d", $3->type);
+                                                printf("AWUI  %s", $1->name);
                                                 typeError(line, $1);
                                               }
 
@@ -171,6 +173,8 @@ exp: simple_exp LT simple_exp               {
                                                *     get(goto_)
                                                */
                                                $$ = (line_p) malloc(sizeof(line_st));
+                                               $$->true = NULL;
+                                               $$->false = NULL;
 
                                                // Create the Quads
                                                quad_p quadItem = newQuad(GT_GOTO, $1->name, $3->name, "goto_");
@@ -205,7 +209,6 @@ exp: simple_exp LT simple_exp               {
                                                *     get(goto_)
                                                */
                                                $$ = (line_p) malloc(sizeof(line_st));
-
                                                // Create the Quads
                                                quad_p quadItem = newQuad(GT_GOTO, $1->name, $3->name, "goto_");
                                                $$->true  = newList($$->true, quadItem);
@@ -213,7 +216,7 @@ exp: simple_exp LT simple_exp               {
                                                quadItem = newQuad(GOTO, "NULL", "NULL", "goto_");
                                                $$->false = newList($$->false, quadItem);
                                             }
-      | LPAREN simple_exp RPAREN            { $$ = $2; }
+      | LPAREN exp RPAREN            { $$ = $2; }
       ;
 
 simple_exp: simple_exp PLUS term            {
@@ -364,7 +367,7 @@ factor: LPAREN exp RPAREN                   {  }
                                               value.float_value = $1;
                                               $$ = createTempConstant(value, FLT);
                                             }
-      | variable                            { $$ = $1; }
+      | variable                            { $$ = $1;}
       ;
 
 variable: ID                                {
@@ -408,7 +411,7 @@ int yylex();
 #include "lex.yy.c"
 
 /* Bison does NOT implement yyerror, so define it here */
-void yyerror (char *string) {
+void yyerror (char const * string) {
   char * stderr;
   printf ("ERROR: %s in line %d\n", string, line);
   //exit(EXIT_FAILURE);

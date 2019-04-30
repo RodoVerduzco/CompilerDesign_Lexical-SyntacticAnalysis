@@ -68,8 +68,9 @@ entry_p createSymbol(int type, char * identifier_name, unsigned int lineNumber) 
   /* Initialize every variable as 0*/
 	if(type == INT)
 		new_node->value.integer_value = 0;
-	else
-		new_node->value.float_value = 0.0;
+	else {
+    new_node->value.float_value = 0.0;
+  }
 
 
   /* Will add the value and type correcty in a more advanced implementation */
@@ -154,7 +155,6 @@ void printTable() {
 entry_p addSymbol(int type, char * identifier_name, int lineNumber) {
   // lookup for the symbol on the symbol table
   entry_p lookup_symbol = g_hash_table_lookup(symTable_p, identifier_name);
-
   if (lookup_symbol == NULL) {
     createSymbol(type, identifier_name, lineNumber);
   }
@@ -262,7 +262,22 @@ quad_p newQuad(int op, char* arg1, char* arg2, char * dest) {
 
   nextQuad ++;
 
-  quadArray_p = g_array_append_val(quadArray_p, quadItem);
+  //g_array_append_val(quadArray_p, quadItem);
+  printf("INSERTED    %d     %s    %s    %s      - IN  %d\n", quadItem->op, quadItem->arg1, quadItem->arg2, quadItem->dest,  quadArray_p->len);
+  // g_array_insert_vals (quadArray_p,
+  //                    quadArray_p->len,
+  //                    quadItem,
+  //                    1);
+  printf("%s", quadItem);
+  g_array_append_vals(quadArray_p, quadItem, 1);
+
+
+
+  // for (int i=0; i<quadArray_p->len; i++) {
+  //   quad_p item = g_array_index(quadArray_p, quad_p, i);
+  //   printf("item[%d] = %d\n",i, item->addr);
+  // }
+
 
   return quadItem;
 }
@@ -288,6 +303,8 @@ int PrintQuads()
 
 
   printf("\n\nAdd  -  Operator  -  Source1  -  Source2  -  Destination\n");
+  quad_p item_ = g_array_index(quadArray_p, quad_p, 0);
+  printf("%s", item_->arg1);
 
   for (int i=0; i<quadArray_p->len; i++) {
     quad_p item = g_array_index(quadArray_p, quad_p, i);
