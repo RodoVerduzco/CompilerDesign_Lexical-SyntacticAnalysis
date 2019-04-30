@@ -39,7 +39,7 @@ int errors = 0;
   int     intVal;
   float   floatVal;
   char *  stringVal;
-  line_p linePoint;
+  line_p lineStruct_p;
   entry_p symTab;
 }
 
@@ -88,7 +88,7 @@ int errors = 0;
 
 %type <intVal> type M;
 %type <symTab> variable factor term simple_exp stmt_seq block stmt;
-%type <linePoint> exp N;
+%type <lineStruct_p> exp N;
 /*%type <symTab> variable factor term simple_exp exp stmt_seq block stmt;*/
 %%
 
