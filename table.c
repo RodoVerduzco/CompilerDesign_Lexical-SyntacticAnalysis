@@ -267,8 +267,7 @@ quad_p newQuad(int op, char* arg1, char* arg2, char * dest) {
   // g_array_insert_vals (quadArray_p,
   //                    quadArray_p->len,
   //                    quadItem,
-  //                    1);
-  printf("%s", quadItem);
+  //                     1);
   g_array_append_vals(quadArray_p, quadItem, 1);
 
 

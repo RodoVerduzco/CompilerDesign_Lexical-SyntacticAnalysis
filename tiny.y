@@ -432,7 +432,7 @@ int main (void) {
 
   quadArray_p = g_array_new(FALSE,
                             FALSE,
-                            sizeof(quad));
+                            sizeof(quad_p));               
 
   // Perform the parsing
   yyparse();

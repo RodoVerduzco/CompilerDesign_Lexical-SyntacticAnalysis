@@ -1,0 +1,7 @@
+int sdf;
+int k;
+int j;
+
+if (k>j) {
+  sdf := 1;
+}
