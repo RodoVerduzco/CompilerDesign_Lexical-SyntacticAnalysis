@@ -25,7 +25,7 @@
  */
 GHashTable * symTable_p;
 
-GArray * quadArray_p;
+GList * quadList_p;
 
 int lineC;
 

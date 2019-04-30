@@ -177,7 +177,7 @@ exp: simple_exp LT simple_exp               {
                                                $$->false = NULL;
 
                                                // Create the Quads
-                                               quad_p quadItem = newQuad(GT_GOTO, $1->name, $3->name, "goto_");
+                                               quad_p quadItem = newQuad(LT_GOTO, $1->name, $3->name, "goto_");
                                                $$->true  = newList($$->true, quadItem);
 
                                                quadItem = newQuad(GOTO, "NULL", "NULL", "goto_");
@@ -194,7 +194,7 @@ exp: simple_exp LT simple_exp               {
                                                $$ = (line_p) malloc(sizeof(line_st));
 
                                                // Create the Quads
-                                               quad_p quadItem = newQuad(GT_GOTO, $1->name, $3->name, "goto_");
+                                               quad_p quadItem = newQuad(EQ_GOTO, $1->name, $3->name, "goto_");
                                                $$->true  = newList($$->true, quadItem);
 
                                                quadItem = newQuad(GOTO, "NULL", "NULL", "goto_");
@@ -429,11 +429,6 @@ int main (void) {
   symTable_p  = g_hash_table_new_full(g_str_hash, g_str_equal,
                                       NULL,
                                       (GDestroyNotify)freeItem);
-
-  quadArray_p = g_array_new(FALSE,
-                            FALSE,
-                            sizeof(quad_p));               
-
   // Perform the parsing
   yyparse();
 

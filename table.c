@@ -262,21 +262,7 @@ quad_p newQuad(int op, char* arg1, char* arg2, char * dest) {
 
   nextQuad ++;
 
-  //g_array_append_val(quadArray_p, quadItem);
-  printf("INSERTED    %d     %s    %s    %s      - IN  %d\n", quadItem->op, quadItem->arg1, quadItem->arg2, quadItem->dest,  quadArray_p->len);
-  // g_array_insert_vals (quadArray_p,
-  //                    quadArray_p->len,
-  //                    quadItem,
-  //                     1);
-  g_array_append_vals(quadArray_p, quadItem, 1);
-
-
-
-  // for (int i=0; i<quadArray_p->len; i++) {
-  //   quad_p item = g_array_index(quadArray_p, quad_p, i);
-  //   printf("item[%d] = %d\n",i, item->addr);
-  // }
-
+  quadList_p = g_list_append(quadList_p, quadItem);
 
   return quadItem;
 }
@@ -287,39 +273,18 @@ GList * newList(GList * list, quad_p quadItem){
   return list;
 }
 
-
 int PrintQuads()
 {
-  /********
-   *
-   *
-   * !!!!!!!!!!1CHECK SEGMENTATION FAULT ON SECOND ITERATION !!!!!!!!!!!
-   *
-   *
-   *
-   *
-   * *******/
-
-
-  printf("\n\nAdd  -  Operator  -  Source1  -  Source2  -  Destination\n");
-  quad_p item_ = g_array_index(quadArray_p, quad_p, 0);
-  printf("%s", item_->arg1);
-
-  for (int i=0; i<quadArray_p->len; i++) {
-    quad_p item = g_array_index(quadArray_p, quad_p, i);
-    printf("%d", item->addr);
-    // printf("%2d %11s %11d %10s %12s\n", item->addr,
-    //                                     item->dest?item->dest:" ",
-    //                                     item->op, item->arg1?item->arg1:" ",
-    //                                     item->arg2?item->arg2:" ");
-  }
+  printf("QUAD------DEST-----OP-----ARG1-----ARG2-----|\n");
+  g_list_foreach(quadList_p, (GFunc)SupportPrintQuads, NULL);
+  return (EXIT_SUCCESS);
 }
 /*
 Support function needed by GLib
  */
 void SupportPrintQuads(gpointer data, gpointer user_data)
 {
-  //PrintItemQuads(data);
+  PrintItemQuads(data);
 }
 
 /*
@@ -327,6 +292,6 @@ void SupportPrintQuads(gpointer data, gpointer user_data)
  */
 
 int PrintItemQuads(quad_p quad){
-printf(" %2d   %7s   %5c   %6.5s     %4.5s     |\n",lineC++, quad->dest, quad->op, quad->arg1, quad->arg2);
+printf(" %2d   %7s   %5d   %6.5s     %4.5s     |\n",lineC++, quad->dest, quad->op, quad->arg1, quad->arg2);
   return 1;
 }
