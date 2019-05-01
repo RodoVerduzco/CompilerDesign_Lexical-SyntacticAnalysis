@@ -248,7 +248,7 @@ entry_p createTempConstant(union num_val value, enum myTypes type);
  */
 entry_p updateSymbol(char * identifier_name, enum myTypes type, union num_val value);
 
-quad_p newQuad(int op, char* arg1, char* arg2, char * dest);
+quad_p newQuad(int op, char * arg1, char * arg2, char * dest);
 
 GList * newList(GList * list, quad_p quadItem);
 
@@ -257,3 +257,5 @@ int PrintItemQuads(quad_p quad);
 int PrintQuads();
 
 void SupportPrintQuads(gpointer data, gpointer user_data);
+
+char * opToString(int operation);

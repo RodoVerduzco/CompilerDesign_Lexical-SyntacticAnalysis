@@ -137,18 +137,35 @@ stmt:   IF exp %prec THEN M stmt            {
       | variable ASSIGN simple_exp SEMI     {  }
                                             {
                                               if(($1->type == FLT) && ($3->type == FLT)) {
-                                                 union num_val value;
-                                                 value.float_value = 0;
-                                                 $$ = createTempConstant(value, FLT);
+                                                union num_val value;
+                                                value.float_value = $3->value.float_value;
+
+                                                newQuad(ASSIGNMENT, $3->name, NULL, $1->name);
+                                                //$$ = createTempConstant(value, FLT);
                                                 // Do sth
                                               }
                                               else if(($1->type == INT)&& ($3->type == INT)) {
                                                 union num_val value;
-                                                value.integer_value = 0;
-                                                $$ = createTempConstant(value, INT);
+                                                value.integer_value = $3->value.integer_value;
+
+                                                newQuad(ASSIGNMENT, $3->name, NULL, $1->name);
+                                                //$$ = createTempConstant(value, INT);
                                                 // ASSIGN to
                                               }
                                               else {
+
+                                                /* if(($1->type == INT) && ($3->type == FLT)) {
+                                                  yyerror("Loss of Precision. Casting Float to Integer.");
+                                                  $$->value.integer_value = (int) $3->value.float_value;
+
+                                                  IntegerToReal(theTable_p, $1->place);
+                                                }
+                                                else if($1->type == real && $3->type == integer){
+                                                  yyerror(theTable_p,"Warning, implicit casting between int and float");
+                                                  entry->value.r_value = (float)$3->value.i_value;
+                                                  $1->value.r_value = (float)$3->value.i_value;
+
+                                                } */
                                                 printf("INT %d   FLT  %d\n", INT, FLT);
                                                 printf("%d", $3->type);
                                                 printf("AWUI  %s", $1->name);
@@ -216,7 +233,10 @@ exp: simple_exp LT simple_exp               {
                                                quadItem = newQuad(GOTO, "NULL", "NULL", "goto_");
                                                $$->false = newList($$->false, quadItem);
                                             }
-      | LPAREN exp RPAREN            { $$ = $2; }
+      | simple_exp                          {
+
+                                                $$ = $1;
+                                            }
       ;
 
 simple_exp: simple_exp PLUS term            {
@@ -261,6 +281,7 @@ simple_exp: simple_exp PLUS term            {
                                               }
 
                                               $$ = temp;
+                                              newQuad(ADDITION, $1->name, $3->name, temp->name);
 
                                               //newQuad('+', $1->name, $3->name, $$->name);
                                             }
@@ -269,11 +290,15 @@ simple_exp: simple_exp PLUS term            {
                                                 union num_val value;
                                                 value.integer_value = 0;
                                                 $$ = createTempConstant(value, INT);
+
+                                                newQuad(SUBSTRACTION, $1->name, $3->name, $$->name);
                                               }
                                               else if(($1->type==FLT) && ($3->type==FLT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
                                                 $$ = createTempConstant(value, FLT);
+
+                                                newQuad(SUBSTRACTION, $1->name, $3->name, $$->name);
                                               }
                                               // Coersion
                                               else {
@@ -283,11 +308,15 @@ simple_exp: simple_exp PLUS term            {
                                                     union num_val value;
                                                     value.float_value = 0;
                                                     $$ = createTempConstant(value, FLT);
+
+                                                    newQuad(SUBSTRACTION, $1->name, $3->name, $$->name);
                                                   }
                                                   if(($1->type==INT) && ($3->type==FLT)){
                                                     union num_val value;
                                                     value.float_value = 0;
                                                     $$ = createTempConstant(value, FLT);
+
+                                                    newQuad(SUBSTRACTION, $1->name, $3->name, $$->name);
                                                   }
                                                 }
                                                 else {
@@ -295,7 +324,7 @@ simple_exp: simple_exp PLUS term            {
                                                 }
                                               }
                                             }
-      | term                                { $$ = $1;}
+      | term                                { $$ = $1; }
       ;
 
 term: term TIMES factor                     {
@@ -303,11 +332,15 @@ term: term TIMES factor                     {
                                                 union num_val value;
                                                 value.integer_value = 0;
                                                 $$ = createTempConstant(value, INT);
+
+                                                newQuad(MULTIPLICATION, $1->name, $3->name, $$->name);
                                               }
                                               else if(($1->type==FLT) && ($3->type==FLT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
                                                 $$ = createTempConstant(value, FLT);
+
+                                                newQuad(MULTIPLICATION, $1->name, $3->name, $$->name);
                                               }
                                               // Coersion
                                               else {
@@ -317,11 +350,15 @@ term: term TIMES factor                     {
                                                   union num_val value;
                                                   value.float_value = 0;
                                                   $$ = createTempConstant(value, FLT);
+
+                                                  newQuad(MULTIPLICATION, $1->name, $3->name, $$->name);
                                                 }
                                                 if(($1->type==INT) && ($3->type==FLT)){
                                                   union num_val value;
                                                   value.float_value = 0;
                                                   $$ = createTempConstant(value, FLT);
+
+                                                  newQuad(MULTIPLICATION, $1->name, $3->name, $$->name);
                                                 }
                                               }
                                            }
@@ -330,11 +367,15 @@ term: term TIMES factor                     {
                                                 union num_val value;
                                                 value.float_value = 0;
                                                 $$ = createTempConstant(value, INT);
+
+                                                newQuad(DIVISION, $1->name, $3->name, $$->name);
                                               }
                                               else if(($1->type==FLT) && ($3->type==FLT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
                                                 $$ = createTempConstant(value, FLT);
+
+                                                newQuad(DIVISION, $1->name, $3->name, $$->name);
                                               }
                                               // Coersion
                                               else {
@@ -344,11 +385,15 @@ term: term TIMES factor                     {
                                                   union num_val value;
                                                   value.float_value = 0;
                                                   $$ = createTempConstant(value, FLT);
+
+                                                  newQuad(DIVISION, $1->name, $3->name, $$->name);
                                                 }
                                                 if(($1->type==INT) && ($3->type==FLT)){
                                                   union num_val value;
                                                   value.float_value = 0;
                                                   $$ = createTempConstant(value, FLT);
+
+                                                  newQuad(DIVISION, $1->name, $3->name, $$->name);
                                                 }
                                               }
                                             }
@@ -358,16 +403,26 @@ term: term TIMES factor                     {
 
 factor: LPAREN exp RPAREN                   {  }
       | INT_NUM                             {
-                                              union num_val value;
-                                              value.integer_value = $1;
-                                              $$ = createTempConstant(value, INT);
+                                              entry_p node = malloc(sizeof(tableEntry));
+
+                                              node->name = malloc(sizeof(char *));
+                                              node->type = INT;
+                                              node->value.integer_value = $1;
+                                              sprintf(node->name, "%d", $1);
+
+                                              $$ = node;
                                             }
       | FLOAT_NUM                           {
-                                              union num_val value;
-                                              value.float_value = $1;
-                                              $$ = createTempConstant(value, FLT);
+                                              entry_p node = malloc(sizeof(tableEntry));
+
+                                              node->name = malloc(sizeof(char *));
+                                              node->type = FLT;
+                                              node->value.float_value = $1;
+                                              sprintf(node->name, "%f", $1);
+make
+                                              $$ = node;
                                             }
-      | variable                            { $$ = $1;}
+      | variable                            { $$ = $1; }
       ;
 
 variable: ID                                {

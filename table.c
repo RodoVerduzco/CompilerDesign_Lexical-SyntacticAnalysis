@@ -253,6 +253,7 @@ entry_p createTempConstant(union num_val value, enum myTypes type) {
 quad_p newQuad(int op, char* arg1, char* arg2, char * dest) {
   // Create quad
   quad_p quadItem = (quad_p) malloc(sizeof(quad));
+
   // Set Quad Values
   quadItem->op   = op;
   quadItem->arg1 = arg1?arg1:"NULL";
@@ -292,6 +293,21 @@ void SupportPrintQuads(gpointer data, gpointer user_data)
  */
 
 int PrintItemQuads(quad_p quad){
-printf(" %2d   %7s   %5d   %6.5s     %4.5s     |\n",lineC++, quad->dest, quad->op, quad->arg1, quad->arg2);
+printf(" %2d   %7s   %5s   %6.5s     %4.5s     |\n",lineC++, quad->dest, opToString(quad->op), quad->arg1, quad->arg2);
   return 1;
+}
+
+char * opToString(int operation) {
+  switch (operation) {
+    case ADDITION:       return "+";
+    case SUBSTRACTION:   return "-";
+    case DIVISION:       return "/";
+    case MULTIPLICATION: return "*";
+    case LT_GOTO:        return "<";
+    case GT_GOTO:        return ">";
+    case EQ_GOTO:        return "==";
+    case GOTO:           return "JUMP";
+    case ASSIGNMENT:     return ":=";
+    default:             return "ERROR";
+  }
 }
