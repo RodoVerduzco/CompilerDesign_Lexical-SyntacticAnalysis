@@ -239,10 +239,10 @@ entry_p updateSymbol(char * identifier_name, enum myTypes type, union num_val va
 entry_p createTempConstant(union num_val value, enum myTypes type) {
   char * temp = malloc(sizeof(char *));
 
-  int i=0;
+  unsigned short int i=0;
   // Assign the correct temp name
   do {
-    snprintf(temp, sizeof(char *), "t%d", i);
+    snprintf(temp, sizeof(char *), "t%hu", i);
     i++;
   } while (lookSymbol(temp) != NULL);
 
