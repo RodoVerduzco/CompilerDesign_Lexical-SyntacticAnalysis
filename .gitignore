@@ -2,6 +2,6 @@
 *.output
 *.yy.c
 .vscode/
-Makefile.sh
+*.sh
 vgcore.*
 tiny

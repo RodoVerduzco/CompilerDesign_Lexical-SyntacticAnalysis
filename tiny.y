@@ -490,7 +490,7 @@ int main (void) {
   // Print the table
   printTable();
 
-
+	// Print the Quads
   PrintQuads();
 
   // Destroy the hash table
