@@ -250,6 +250,26 @@ entry_p createTempConstant(union num_val value, enum myTypes type) {
   return updateSymbol(temp, type, value);
 }
 
+line_p convertToLineStruct(entry_p node){
+  line_p lineStruct = (line_p) malloc(sizeof(line_st));
+
+  lineStruct->name = node->name;
+  lineStruct->next = NULL;
+
+  if(!(strcmp(node->name, "goto_") == 0)){
+    lineStruct->type = node->type;
+
+    if(lineStruct->type == INT){
+      lineStruct->value.integer_value = node->value.integer_value;
+    }
+    else {
+      lineStruct->value.float_value = node->value.float_value;
+    }
+  }
+
+  return lineStruct;
+}
+
 quad_p newQuad(int op, char* arg1, char* arg2, char * dest) {
   // Create quad
   quad_p quadItem = (quad_p) malloc(sizeof(quad));
@@ -262,39 +282,47 @@ quad_p newQuad(int op, char* arg1, char* arg2, char * dest) {
   quadItem->addr = nextQuad;
 
   nextQuad ++;
-
   quadList_p = g_list_append(quadList_p, quadItem);
 
   return quadItem;
 }
 
-GList * newList(GList * list, quad_p quadItem){
-  list = g_list_append(list, quadItem);
+void backpatch(GList * list, int quad) {
+  GList * listItem = list;
+  quad_p patchElement = NULL;
 
-  return list;
+  while (listItem != NULL) {
+    // Get the List Element
+    patchElement = g_list_nth_data(quadList_p, GPOINTER_TO_INT(listItem->data));
+
+    // Set new Goto
+    patchElement->dest = malloc(sizeof(char *));
+    sprintf(patchElement->dest, "goto_%d", quad);
+
+    // Iterate
+    listItem = listItem->next;
+  }
 }
 
-int PrintQuads()
-{
+GList * mergeList(GList * list1, GList * list2){
+  return g_list_concat(list1, list2);
+}
+
+GList * newList(int quadNo) {
+  return g_list_append(NULL, GINT_TO_POINTER(quadNo));
+}
+
+void PrintQuads() {
   printf("QUAD------DEST-----OP-----ARG1-----ARG2-----|\n");
   g_list_foreach(quadList_p, (GFunc)SupportPrintQuads, NULL);
-  return (EXIT_SUCCESS);
 }
-/*
-Support function needed by GLib
- */
-void SupportPrintQuads(gpointer data, gpointer user_data)
-{
+
+void SupportPrintQuads(gpointer data) {
   PrintItemQuads(data);
 }
 
-/*
- Actual printing
- */
-
-int PrintItemQuads(quad_p quad){
-printf(" %2d   %7s   %5s   %6.5s     %4.5s     |\n",lineC++, quad->dest, opToString(quad->op), quad->arg1, quad->arg2);
-  return 1;
+void PrintItemQuads(quad_p quad){
+  printf(" %2d   %10s   %5s   %6.5s     %4.5s     |\n", lineC++, quad->dest, opToString(quad->op), quad->arg1, quad->arg2);
 }
 
 char * opToString(int operation) {

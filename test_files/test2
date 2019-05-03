@@ -37,13 +37,14 @@ int h7;
     i := i+10;
   }
 
-  while(h4=8) do {
+  if(h4<8) then {
     j := 3;
+  }
+  else {
+    j:=4;
   }
 
  i := j/i;
  h2 := h / h3;
  i := 100.10012*h;
-
-
 }

@@ -88,6 +88,7 @@ typedef struct lineStruct {
   union num_val value;
   GList * true;
   GList * false;
+  GList * next;
 } line_st;
 
 typedef struct lineStruct * line_p ;
@@ -250,12 +251,18 @@ entry_p updateSymbol(char * identifier_name, enum myTypes type, union num_val va
 
 quad_p newQuad(int op, char * arg1, char * arg2, char * dest);
 
-GList * newList(GList * list, quad_p quadItem);
+GList * newList(int quadNo);
 
-int PrintItemQuads(quad_p quad);
+void PrintQuads();
 
-int PrintQuads();
+void PrintItemQuads(quad_p quad);
 
-void SupportPrintQuads(gpointer data, gpointer user_data);
+void SupportPrintQuads(gpointer data);
 
 char * opToString(int operation);
+
+void backpatch(GList * list, int quad);
+
+GList * mergeList(GList * list1, GList * list2);
+
+line_p convertToLineStruct(entry_p node);
