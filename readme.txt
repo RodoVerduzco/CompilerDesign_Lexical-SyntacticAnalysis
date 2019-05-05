@@ -13,6 +13,10 @@
 *          bison -v tiny_grammar.y -o tiny.tab.c
 *          flex tiny.l
 *          gcc -DGRAMMAR `pkg-config gtk+-2.0 --cflags --libs` -O2 -o tiny table.c tiny.tab.c -lfl
+*				
+*					OR
+*
+*		   gcc -DGRAMMAR table.c tiny.tab.c `pkg-config gtk+-2.0 --cflags --libs` -O2 -o tiny -lfl
 *          ./tiny < file
 *
 */
