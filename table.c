@@ -349,7 +349,7 @@ void interpreter (GList * quad_list) {
     }
 
     int length = g_list_length(quad_list);
-    quad * quads[length];
+    quad_p quads[length];
 
     GList * temp = quad_list;
 
@@ -365,18 +365,18 @@ void interpreter (GList * quad_list) {
 }
 
 // Run the quad array based on the program index (this indicates the quad to be executed)
-void execute_all_program (int length, quad_p * quads[]) {
+void execute_all_program (int length, quad_p quads[]) {
     while (program_index < length) {
         execute_quad(quads[program_index]);
     }
 }
 
-void execute_quad (quad * q) {
+void execute_quad (quad_p q) {
     switch(q->op) {
         case ADDITION:
             //addition operation
             break;
-        case SUBTRACTION:
+        case SUBSTRACTION:
             //substraction operation
             break;
         case MULTIPLICATION:
