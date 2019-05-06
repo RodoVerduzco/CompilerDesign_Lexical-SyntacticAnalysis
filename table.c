@@ -14,8 +14,6 @@
 
 #include "table.h"
 
-GList * quadList = NULL;
-
 /**
  *
  * @brief De-allocates memory assigned to user-defined data structure.
@@ -70,8 +68,9 @@ entry_p createSymbol(int type, char * identifier_name, unsigned int lineNumber) 
   /* Initialize every variable as 0*/
 	if(type == INT)
 		new_node->value.integer_value = 0;
-	else
-		new_node->value.float_value = 0.0;
+	else {
+    new_node->value.float_value = 0.0;
+  }
 
 
   /* Will add the value and type correcty in a more advanced implementation */
@@ -156,7 +155,6 @@ void printTable() {
 entry_p addSymbol(int type, char * identifier_name, int lineNumber) {
   // lookup for the symbol on the symbol table
   entry_p lookup_symbol = g_hash_table_lookup(symTable_p, identifier_name);
-
   if (lookup_symbol == NULL) {
     createSymbol(type, identifier_name, lineNumber);
   }
@@ -209,12 +207,13 @@ entry_p lookSymbol(char * identifier_name) {
  * @endcode
  *
  */
-void updateSymbol(char * identifier_name, enum myTypes type, union num_val value) {
+entry_p updateSymbol(char * identifier_name, enum myTypes type, union num_val value) {
 	entry_p node = g_hash_table_lookup(symTable_p, identifier_name);
 	if(node != NULL) {
 		node->type = type;
 		node->value = value;
 	}
+  return node;
 }
 
 /**
@@ -240,54 +239,103 @@ void updateSymbol(char * identifier_name, enum myTypes type, union num_val value
 entry_p createTempConstant(union num_val value, enum myTypes type) {
   char * temp = malloc(sizeof(char *));
 
-
   int i=0;
   // Assign the correct temp name
   do {
-    snprintf(temp, sizeof(char *), "%td", i);
+    snprintf(temp, sizeof(char *), "t%d", i);
     i++;
   } while (lookSymbol(temp) != NULL);
 
   createSymbol(type, temp, 0);
-  updateSymbol(temp, type, value);
+  return updateSymbol(temp, type, value);
 }
 
-line_p newQuad(char op, char* arg1, char* arg2, char* dest) {
+line_p convertToLineStruct(entry_p node){
+  line_p lineStruct = (line_p) malloc(sizeof(line_st));
+
+  lineStruct->name = node->name;
+  lineStruct->next = NULL;
+
+  if(!(strcmp(node->name, "goto_") == 0)){
+    lineStruct->type = node->type;
+
+    if(lineStruct->type == INT){
+      lineStruct->value.integer_value = node->value.integer_value;
+    }
+    else {
+      lineStruct->value.float_value = node->value.float_value;
+    }
+  }
+
+  return lineStruct;
+}
+
+quad_p newQuad(int op, char* arg1, char* arg2, char * dest) {
   // Create quad
   quad_p quadItem = (quad_p) malloc(sizeof(quad));
 
   // Set Quad Values
-  quadItem->op = op;
-  quadItem->arg1 = arg1;
-  quadItem->arg2 = arg2;
-  quadItem->dest = dest;
+  quadItem->op   = op;
+  quadItem->arg1 = arg1?arg1:"NULL";
+  quadItem->arg2 = arg2?arg2:"NULL";
+  quadItem->dest = dest?dest:"NULL";
+  quadItem->addr = nextQuad;
 
-  // Append Quad to the list
-  quadList = g_list_append(quadList, quadItem);
+  nextQuad ++;
+  quadList_p = g_list_append(quadList_p, quadItem);
 
-  PrintQuads();
+  return quadItem;
 }
 
-int PrintQuads()
-{
+void backpatch(GList * list, int quad) {
+  GList * listItem = list;
+  quad_p patchElement = NULL;
+
+  while (listItem != NULL) {
+    // Get the List Element
+    patchElement = g_list_nth_data(quadList_p, GPOINTER_TO_INT(listItem->data));
+
+    // Set new Goto
+    patchElement->dest = malloc(sizeof(char *));
+    sprintf(patchElement->dest, "goto_%d", quad);
+
+    // Iterate
+    listItem = listItem->next;
+  }
+}
+
+GList * mergeList(GList * list1, GList * list2){
+  return g_list_concat(list1, list2);
+}
+
+GList * newList(int quadNo) {
+  return g_list_append(NULL, GINT_TO_POINTER(quadNo));
+}
+
+void PrintQuads() {
   printf("QUAD------DEST-----OP-----ARG1-----ARG2-----|\n");
-  if(quadList)
-  g_list_foreach(quadList, (GFunc)SupportPrintQuads, NULL);
-  //return (EXIT_SUCCESS);
+  g_list_foreach(quadList_p, (GFunc)SupportPrintQuads, NULL);
 }
-/*
-Support function needed by GLib
- */
-void SupportPrintQuads(gpointer data, gpointer user_data)
-{
+
+void SupportPrintQuads(gpointer data) {
   PrintItemQuads(data);
 }
 
-/*
- Actual printing
- */
+void PrintItemQuads(quad_p quad){
+  printf(" %2d   %10s   %5s   %6.5s     %4.5s     |\n", lineC++, quad->dest, opToString(quad->op), quad->arg1, quad->arg2);
+}
 
-int PrintItemQuads(quad_p quad){
-printf(" %2d   %7s   %5c   %6.5s     %4.5s     |\n",lineC++, quad->dest, quad->op, quad->arg1, quad->arg2);
-  return 1;
+char * opToString(int operation) {
+  switch (operation) {
+    case ADDITION:       return "+";
+    case SUBSTRACTION:   return "-";
+    case DIVISION:       return "/";
+    case MULTIPLICATION: return "*";
+    case LT_GOTO:        return "<";
+    case GT_GOTO:        return ">";
+    case EQ_GOTO:        return "==";
+    case GOTO:           return "JUMP";
+    case ASSIGNMENT:     return ":=";
+    default:             return "ERROR";
+  }
 }

@@ -14,19 +14,18 @@
 %{
 
 #include "table.h"            // Helper file
+#define  YYERROR_VERBOSE
+
   /* Function definitions */
 extern int line;
 extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
 
-void yyerror(char *string);
-void typeError(int line, entry_p data);
-int quadLineIncrement();
+void yyerror(char const * string);
+void typeError(int line, line_p data);
 
 int errors = 0;
-int quadLine = 0;
-
 
  /* Removes the warning of yylex() not defined when using C99 */
 #if YYBISON
@@ -40,7 +39,7 @@ int quadLine = 0;
   int     intVal;
   float   floatVal;
   char *  stringVal;
-  line_p linePoint;
+  line_p lineStruct_p;
   entry_p symTab;
 }
 
@@ -84,12 +83,11 @@ int quadLine = 0;
  /* Identifier */
 %token <stringVal>ID
 
-%nonassoc THEN
-%nonassoc ELSE
 
 %type <intVal> type;
-%type <linePoint>M N
-%type <symTab> variable factor term simple_exp exp stmt_seq block stmt;
+%type <lineStruct_p> variable factor term simple_exp exp stmt_seq block stmt N M;
+
+%nonassoc IF
 %%
 
  /*  *  *  *  Grammar definition  *  *  *  */
@@ -112,68 +110,184 @@ type:   INTEGER                             { $$ = INT; }
       | FLOAT                               { $$ = FLT; }
       ;
 
-stmt_seq: %empty                            { /* epsilon */ }
-          |stmt_seq M stmt                  {  }
+stmt_seq: %empty                            {
+                                              $$ = (line_p) malloc(sizeof(line_st));
+                                              $$->next = NULL;
+                                            }
+          |stmt_seq M stmt                  {
+                                              $$ = (line_p) malloc(sizeof(line_st));
+                                              $$->next = NULL;
+
+                                              $$->next = mergeList($1->next, $3->next);
+                                            }
           ;
 
-stmt:   IF exp THEN M stmt                  {  }
-      | IF exp THEN M stmt N ELSE M stmt    {  }
-      | WHILE M exp DO M stmt               {  }
-      | variable ASSIGN exp SEMI            {  }
-                                            {
-                                               if(($1->type == FLT) && ($3->type == FLT)) {
-                                                 union num_val value;
-                                                 value.float_value = 0;
-                                                 $$ = createTempConstant(value, FLT);
-                                                // Do sth
+ stmt: IF exp THEN M stmt                   {
+                                              /*
+                                               * Code
+                                               *    backpatch(E.t, M.quad)
+                                               *    S.next = merge(E.f, S.next))
+                                               *
+                                               */
+                                               $$ = (line_p) malloc(sizeof(line_st));
+                                               backpatch($2->true, $4->quad);
+                                               $$->next = mergeList($2->false, $5->next);
+                                            }
+      | IF exp THEN M stmt N ELSE M stmt    {
+                                              /*
+                                              * Code
+                                              *    backpatch(E.t, M.quad)
+                                              *    backpatch(E.f, M2.quad)
+                                              *    S->next = merge(S1->next, merge(N.next, S2.next))
+                                              */
+                                              $$ = (line_p) malloc(sizeof(line_st));
+
+                                              backpatch($2->true, $4->quad);
+                                              backpatch($2->false, $8->quad);
+
+                                              $$->next = mergeList($5->next, mergeList($6->next, $9->next));
+
+                                              backpatch($$->next, nextQuad);
+                                            }
+      | WHILE M exp DO M stmt               {
+                                              /*
+                                               * Code
+                                               *  backpatch(E.t, M2.quad)
+                                               *  S.next = e.f;
+                                               *  gen(goto m1.quad)
+                                               *
+                                               */
+                                              $$ = (line_p) malloc(sizeof(line_st));
+                                              backpatch($3->true, $5->quad);
+                                              backpatch($3->false, nextQuad+1);
+
+                                              $$->next = $3->false;
+
+                                              char * dest = malloc(sizeof(char *));
+                                              sprintf(dest, "goto_%d", $2->quad);
+
+                                              newQuad(GOTO, "NULL", "NULL", dest);
+                                            }
+      | variable ASSIGN simple_exp SEMI     {
+                                              if(($1->type == FLT) && ($3->type == FLT)) {
+                                                union num_val value;
+                                                value.float_value = $3->value.float_value;
+
+                                                newQuad(ASSIGNMENT, $3->name, NULL, $1->name);
                                               }
                                               else if(($1->type == INT)&& ($3->type == INT)) {
                                                 union num_val value;
-                                                value.float_value = 0;
-                                                $$ = createTempConstant(value, INT);
-                                                // ASSIGN to
+                                                value.integer_value = $3->value.integer_value;
+
+                                                newQuad(ASSIGNMENT, $3->name, NULL, $1->name);
                                               }
                                               else {
-                                                typeError(line, $1);
-                                              }
 
+                                                if(($1->type == INT) && ($3->type == FLT)) {
+                                                  yyerror("Loss of Precision. Casting Float to Integer.");
+                                                  $$->value.integer_value = (int) $3->value.float_value;
+                                                  newQuad(ASSIGNMENT, $3->name, NULL, $1->name);
+                                                  //IntegerToReal(theTable_p, $1->place);
+                                                }
+                                                else if(($1->type == FLT) && ($3->type == INT)){
+                                                  yyerror("Warning, implicit casting between int and float");
+
+                                                  $1->value.float_value    = (float) $3->value.integer_value;
+                                                  newQuad(ASSIGNMENT, $3->name, NULL, $1->name);
+
+                                                }
+                                                else {
+                                                  typeError(line, $1);
+                                                }
+                                              }
                                             };
       | READ LPAREN variable RPAREN SEMI    {  }
       | WRITE LPAREN exp RPAREN SEMI        {  }
-      | block                               {  }
+      | block                               {
+                                              $$ = (line_p) malloc(sizeof(line_st));
+                                              $$->next = NULL;
+                                              $$->next = $1->next;
+                                            }
       ;
 
-block : LBRACE stmt_seq RBRACE              {  }
-      ;
+block : LBRACE stmt_seq RBRACE              {
+                                              $$ = (line_p) malloc(sizeof(line_st));
+                                              $$->next = NULL;
+                                              $$->next = $2->next;
+                                            };
 
-exp: simple_exp LT simple_exp               {  }
-      | simple_exp EQ simple_exp            {  }
-      | simple_exp                          {  }
+exp: simple_exp LT simple_exp               {
+                                              /*
+                                               * Code:
+                                               *     E.t = newList(nextQuad)
+                                               *     E.f = newList(nextQuad +1)
+                                               *     gen(if id1.place < id2.place goto_)
+                                               *     get(goto_)
+                                               */
+                                              $$ = (line_p) malloc(sizeof(line_st));
+                                              $$->name = "goto_";
+
+                                              $$->true  = newList(nextQuad);
+                                              newQuad(LT_GOTO, $1->name, $3->name, "goto_");
+
+                                              $$->false = newList(nextQuad);
+                                              newQuad(GOTO, "NULL", "NULL", "goto_");
+                                            }
+      | simple_exp EQ simple_exp            {
+                                              /*
+                                               * Code:
+                                               *     E.t = newList(nextQuad)
+                                               *     E.f = newList(nextQuad +1)
+                                               *     gen(if id1.place < id2.place goto_)
+                                               *     get(goto_)
+                                               */
+                                              $$ = (line_p) malloc(sizeof(line_st));
+                                              $$->name = "goto_";
+
+                                              $$->true  = newList(nextQuad);
+                                              newQuad(EQ_GOTO, $1->name, $3->name, "goto_");
+
+                                              $$->false = newList(nextQuad);
+                                              newQuad(GOTO, "NULL", "NULL", "goto_");
+
+                                            }
+      | simple_exp GT simple_exp            {
+                                                                                            /*
+                                               * Code:
+                                               *     E.t = newList(nextQuad)
+                                               *     E.f = newList(nextQuad +1)
+                                               *     gen(if id1.place < id2.place goto_)
+                                               *     get(goto_)
+                                               */
+                                               $$ = (line_p) malloc(sizeof(line_st));
+                                               $$->name = "goto_";
+
+                                               $$->true  = newList(nextQuad);
+                                               newQuad(GT_GOTO, $1->name, $3->name, "goto_");
+
+                                               $$->false = newList(nextQuad);
+                                               newQuad(GOTO, "NULL", "NULL", "goto_");
+                                            }
+      | simple_exp                          { $$ = $1; }
       ;
 
 simple_exp: simple_exp PLUS term            {
-                                              //$$ = line_p = malloc(sizeof(line_));
+                                              entry_p temp = NULL;
 
                                               // Type Checking
                                               if(($1->type==INT) && ($3->type==INT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
 
-                                                // Set quad Type
-                                                $$->type = INT;
-
                                                 // Create Temp
-                                                createTempConstant(value, INT);
+                                                temp = createTempConstant(value, INT);
                                               }
                                               else if(($1->type==FLT) && ($3->type==FLT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
 
-                                                // Set quad Type
-                                                $$->type = FLT;
-
                                                 // Create Temp
-                                                createTempConstant(value, FLT);
+                                                temp = createTempConstant(value, FLT);
                                               }
                                               // Coersion
                                               else {
@@ -182,41 +296,41 @@ simple_exp: simple_exp PLUS term            {
                                                     union num_val value;
                                                     value.float_value = 0;
 
-                                                    // Set quad Type
-                                                    $$->type = FLT;
-
                                                     // Create Temp
-                                                    createTempConstant(value, FLT);
+                                                    temp = createTempConstant(value, FLT);
                                                   }
                                                   if(($1->type==INT) && ($3->type==FLT)) {
                                                     union num_val value;
                                                     value.float_value = 0;
 
-                                                    // Set quad Type
-                                                    $$->type = FLT;
-
                                                     // Create Temp
-                                                    createTempConstant(value, FLT);
+                                                    temp = createTempConstant(value, FLT);
                                                   }
                                                 }
                                                 else {
-                                                  typeError(line, $$);
+                                                  typeError(line, convertToLineStruct(temp));
                                                 }
                                               }
 
-                                              newQuad('+', $1->name, $3->name, $$->name);
-                                              quadLineIncrement();
+                                              $$ = convertToLineStruct(temp);
+                                              newQuad(ADDITION, $1->name, $3->name, temp->name);
                                             }
       | simple_exp MINUS term               {
+                                              entry_p temp = malloc(sizeof(tableEntry));
+
                                               if(($1->type==INT) && ($3->type==INT)) {
                                                 union num_val value;
                                                 value.integer_value = 0;
-                                                $$ = createTempConstant(value, INT);
+                                                temp = createTempConstant(value, INT);
+
+                                                newQuad(SUBSTRACTION, $1->name, $3->name, temp->name);
                                               }
                                               else if(($1->type==FLT) && ($3->type==FLT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
-                                                $$ = createTempConstant(value, FLT);
+                                                temp = createTempConstant(value, FLT);
+
+                                                newQuad(SUBSTRACTION, $1->name, $3->name, temp->name);
                                               }
                                               // Coersion
                                               else {
@@ -225,32 +339,44 @@ simple_exp: simple_exp PLUS term            {
                                                   if(($1->type==FLT) && ($3->type==INT)){
                                                     union num_val value;
                                                     value.float_value = 0;
-                                                    $$ = createTempConstant(value, FLT);
+                                                    temp = createTempConstant(value, FLT);
+
+                                                    newQuad(SUBSTRACTION, $1->name, $3->name, temp->name);
                                                   }
                                                   if(($1->type==INT) && ($3->type==FLT)){
                                                     union num_val value;
                                                     value.float_value = 0;
-                                                    $$ = createTempConstant(value, FLT);
+                                                    temp = createTempConstant(value, FLT);
+
+                                                    newQuad(SUBSTRACTION, $1->name, $3->name, temp->name);
                                                   }
                                                 }
                                                 else {
-                                                  typeError(line, $$);
+                                                  typeError(line, convertToLineStruct(temp));
                                                 }
                                               }
+
+                                                $$ = convertToLineStruct(temp);
                                             }
       | term                                { $$ = $1; }
       ;
 
 term: term TIMES factor                     {
+                                              entry_p temp = malloc(sizeof(tableEntry));
+
                                               if(($1->type==INT) && ($3->type==INT)) {
                                                 union num_val value;
                                                 value.integer_value = 0;
-                                                $$ = createTempConstant(value, INT);
+                                                temp = createTempConstant(value, INT);
+
+                                                newQuad(MULTIPLICATION, $1->name, $3->name, temp->name);
                                               }
                                               else if(($1->type==FLT) && ($3->type==FLT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
-                                                $$ = createTempConstant(value, FLT);
+                                                temp = createTempConstant(value, FLT);
+
+                                                newQuad(MULTIPLICATION, $1->name, $3->name, temp->name);
                                               }
                                               // Coersion
                                               else {
@@ -259,25 +385,37 @@ term: term TIMES factor                     {
                                                 if(($1->type==FLT) && ($3->type==INT)){
                                                   union num_val value;
                                                   value.float_value = 0;
-                                                  $$ = createTempConstant(value, FLT);
+                                                  temp = createTempConstant(value, FLT);
+
+                                                  newQuad(MULTIPLICATION, $1->name, $3->name, temp->name);
                                                 }
                                                 if(($1->type==INT) && ($3->type==FLT)){
                                                   union num_val value;
                                                   value.float_value = 0;
-                                                  $$ = createTempConstant(value, FLT);
+                                                  temp = createTempConstant(value, FLT);
+
+                                                  newQuad(MULTIPLICATION, $1->name, $3->name, temp->name);
                                                 }
                                               }
+
+                                              $$ = convertToLineStruct(temp);
                                            }
       | term DIV factor                    {
+                                              entry_p temp = malloc(sizeof(tableEntry));
+
                                               if(($1->type==INT) && ($3->type==INT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
-                                                $$ = createTempConstant(value, INT);
+                                                temp = createTempConstant(value, INT);
+
+                                                newQuad(DIVISION, $1->name, $3->name, temp->name);
                                               }
                                               else if(($1->type==FLT) && ($3->type==FLT)) {
                                                 union num_val value;
                                                 value.float_value = 0;
-                                                $$ = createTempConstant(value, FLT);
+                                                temp = createTempConstant(value, FLT);
+
+                                                newQuad(DIVISION, $1->name, $3->name, temp->name);
                                               }
                                               // Coersion
                                               else {
@@ -286,29 +424,45 @@ term: term TIMES factor                     {
                                                 if(($1->type==FLT) && ($3->type==INT)){
                                                   union num_val value;
                                                   value.float_value = 0;
-                                                  $$ = createTempConstant(value, FLT);
+                                                  temp = createTempConstant(value, FLT);
+
+                                                  newQuad(DIVISION, $1->name, $3->name, temp->name);
                                                 }
                                                 if(($1->type==INT) && ($3->type==FLT)){
                                                   union num_val value;
                                                   value.float_value = 0;
-                                                  $$ = createTempConstant(value, FLT);
+                                                  temp = createTempConstant(value, FLT);
+
+                                                  newQuad(DIVISION, $1->name, $3->name, temp->name);
                                                 }
                                               }
+
+                                              $$ = convertToLineStruct(temp);
                                             }
 
-      | factor                              {  }
+      | factor                              { $$ = $1; }
       ;
 
-factor: LPAREN exp RPAREN                   {  }
+factor: LPAREN exp RPAREN                   { $$ = $2; }
       | INT_NUM                             {
-                                              union num_val value;
-                                              value.integer_value = $1;
-                                              $$ = createTempConstant(value, INT);
+                                              entry_p node = malloc(sizeof(tableEntry));
+
+                                              node->name = malloc(sizeof(char *));
+                                              node->type = INT;
+                                              node->value.integer_value = $1;
+                                              sprintf(node->name, "%d", $1);
+
+                                              $$ = convertToLineStruct(node);
                                             }
       | FLOAT_NUM                           {
-                                              union num_val value;
-                                              value.float_value = $1;
-                                              $$ = createTempConstant(value, FLT);
+                                              entry_p node = malloc(sizeof(tableEntry));
+
+                                              node->name = malloc(sizeof(char *));
+                                              node->type = FLT;
+                                              node->value.float_value = $1;
+                                              sprintf(node->name, "%f", $1);
+
+                                              $$ = convertToLineStruct(node);
                                             }
       | variable                            { $$ = $1; }
       ;
@@ -322,25 +476,28 @@ variable: ID                                {
                                                       exit(EXIT_FAILURE);
                                                 }
                                                 else {
-                                                      $$ = node;
+                                                      $$ = convertToLineStruct(node);
                                                 }
                                             }
         ;
   /* Backpatching grammar */
   M: %empty                                 {
-                                                // M.quad = nextQuad
-                                                $$ = (line_p) malloc(sizeof(line_st));
-                                                $$->quad = quadLine;
+                                                // Add the quad address
+                                                // Code:
+                                                //    M.quad = nextQuad
+                                                $$ = (line_p) malloc(sizeof(line));
+                                                $$->quad = nextQuad;
                                             }
          ;
 
   N: %empty                                 {
-                                                // N.next_list = newList(nextQuad)
-                                                // gen('goto _')
+                                                // Code:
+                                                //    N.next_list = newList(nextQuad)
+                                                //    gen('goto _')
                                                 $$ = (line_p) malloc(sizeof(line_st));
-                                                //$$->nextList = NewList(quadLine);
-                                                newQuad('j', "", "", "goto_");
-                                                quadLineIncrement();
+                                                $$->next  = newList(nextQuad);
+                                                newQuad(GOTO, NULL, NULL, "goto_");
+
                                             };
 
 %%
@@ -351,22 +508,16 @@ int yylex();
 #include "lex.yy.c"
 
 /* Bison does NOT implement yyerror, so define it here */
-void yyerror (char *string) {
+void yyerror (char const * string) {
   char * stderr;
   printf ("ERROR: %s in line %d\n", string, line);
   //exit(EXIT_FAILURE);
 }
 
-void typeError(int line, entry_p data){
+void typeError(int line, line_p data){
   printf("ERROR [%d]: inconsistent type for %s \n", line, data->name);
   errors ++;
   exit(EXIT_FAILURE);
-}
-
-int quadLineIncrement() {
-  int prevQuad = quadLine;
-  quadLine ++;
-  return prevQuad;
 }
 
 /* Bison does NOT define the main entry point so define it here */
@@ -375,12 +526,14 @@ int main (void) {
   symTable_p  = g_hash_table_new_full(g_str_hash, g_str_equal,
                                       NULL,
                                       (GDestroyNotify)freeItem);
-
   // Perform the parsing
   yyparse();
 
   // Print the table
   printTable();
+
+
+  PrintQuads();
 
   // Destroy the hash table
   g_hash_table_destroy(symTable_p);

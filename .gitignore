@@ -1,7 +1,7 @@
-test_files/*
 *.tab.*
 *.output
 *.yy.c
 .vscode/
 Makefile.sh
+vgcore.*
 tiny
