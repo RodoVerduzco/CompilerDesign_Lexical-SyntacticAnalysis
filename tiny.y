@@ -14,6 +14,7 @@
 %{
 
 #include "table.h"            // Helper file
+#include "interpreter.h"      // Helper file
 #define  YYERROR_VERBOSE
 
   /* Function definitions */
@@ -531,8 +532,11 @@ int main (void) {
   // Print the table
   printTable();
 
-
+	// Print the Quads
   PrintQuads();
+
+	// Interpreter
+	// Interpreter(quadList_p, symTable_p);
 
   // Destroy the hash table
   g_hash_table_destroy(symTable_p);

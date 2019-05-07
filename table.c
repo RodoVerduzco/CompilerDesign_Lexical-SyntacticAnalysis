@@ -240,7 +240,7 @@ entry_p createTempConstant(union num_val value, enum myTypes type) {
   unsigned short int i=0;
   // Assign the correct temp name
   do {
-    snprintf(temp, sizeof(char *), "t%d", i);
+    snprintf(temp, sizeof(char *), "t%hu", i);
     i++;
   } while (lookSymbol(temp) != NULL);
 
