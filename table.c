@@ -334,6 +334,8 @@ char * opToString(int operation) {
     case EQ_GOTO:        return "==";
     case GOTO:           return "JUMP";
     case ASSIGNMENT:     return ":=";
+    case READ_:          return "READ";
+    case WRITE_:         return "WRITE";    
     default:             return "ERROR";
   }
 }

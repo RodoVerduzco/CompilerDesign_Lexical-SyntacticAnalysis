@@ -112,7 +112,9 @@ enum operation{
     GT_GOTO,
     EQ_GOTO,
     GOTO,
-    ASSIGNMENT
+    ASSIGNMENT,
+    READ_,
+    WRITE_
 };
 
 int nextQuad;

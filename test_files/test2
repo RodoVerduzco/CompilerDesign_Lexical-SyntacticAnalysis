@@ -37,6 +37,7 @@ int h7;
     i := i+10;
   }
 
+  write(i);
   if(h4<8) then {
     j := 3;
   }

@@ -204,8 +204,14 @@ stmt_seq: %empty                            {
                                                 }
                                               }
                                             };
-      | READ LPAREN variable RPAREN SEMI    {  }
-      | WRITE LPAREN exp RPAREN SEMI        {  }
+      | READ LPAREN variable RPAREN SEMI    {
+                                              newQuad(READ_, NULL, NULL, $3->name);
+                                              $$=$3;
+                                            }
+      | WRITE LPAREN exp RPAREN SEMI        {
+                                              newQuad(WRITE_, NULL, NULL, $3->name);
+                                              $$=$3;
+                                            }
       | block                               {
                                               $$ = (line_p) malloc(sizeof(line_st));
                                               $$->next = NULL;
