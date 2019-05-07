@@ -8,4 +8,5 @@
 #include <string.h>
 
 int Interpreter(GList *quadList_p, GHashTable *symTable_p);
+
 int GotoLine(char *g);
