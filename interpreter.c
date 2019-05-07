@@ -558,7 +558,7 @@ int Interpreter(GList *quadList_p, GHashTable *symTable_p)
 					}
 				}
 				break;
-			case 'e':
+			case EQ_GOTO:
 				//printf("Prueba <\n");
 				arg1 = lookSymbol(quadItem->arg1);
 				arg2 = lookSymbol(quadItem->arg2);
@@ -600,7 +600,7 @@ int Interpreter(GList *quadList_p, GHashTable *symTable_p)
 					}
 					else
 					{
-						printf("Unexpected type error");
+						printf("Unexpected type error or values not numeric");
 					}
 				}
 				else if (arg2 == NULL)
@@ -689,13 +689,14 @@ int Interpreter(GList *quadList_p, GHashTable *symTable_p)
 				}
 				i++;
 				break;
-			case 'j':
+			// case 'j':
+			case GOTO:
 				//printf("Prueba j\n");
 				i = GotoLine(quadItem->dest);
 				//printf("Goto %d", i);
 				break;
 			default:
-				printf("Error badbadbad");
+				printf("Error it seems it was in i=%d Quad\n",i);
 		}
 	}
 	return EXIT_SUCCESS;
@@ -708,6 +709,6 @@ int GotoLine(char *g)
 	char *token;
 	token = strtok(chars, "_");
 	token = strtok(NULL, " ");
-	printf("GO TO LINE: %d", atoi(token));
+	printf("GO TO LINE: %d\n", atoi(token));
 	return atoi(token);
 }
