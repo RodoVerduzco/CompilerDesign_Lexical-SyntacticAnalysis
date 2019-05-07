@@ -56,8 +56,6 @@ int freeItem (entry_p data) {
  *
  */
 entry_p createSymbol(int type, char * identifier_name, unsigned int lineNumber) {
-  entry_p node_p;        // Node to be entered in the symbol table
-
   // Create new table node
   tableEntry * new_node = (tableEntry *) malloc(sizeof(tableEntry));
 
@@ -239,7 +237,7 @@ entry_p updateSymbol(char * identifier_name, enum myTypes type, union num_val va
 entry_p createTempConstant(union num_val value, enum myTypes type) {
   char * temp = malloc(sizeof(char *));
 
-  int i=0;
+  unsigned short int i=0;
   // Assign the correct temp name
   do {
     snprintf(temp, sizeof(char *), "t%d", i);
