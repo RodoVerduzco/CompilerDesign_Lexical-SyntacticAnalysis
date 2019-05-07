@@ -88,6 +88,7 @@ int errors = 0;
 %type <lineStruct_p> variable factor term simple_exp exp stmt_seq block stmt N M;
 
 %nonassoc IF
+%nonassoc THEN
 %%
 
  /*  *  *  *  Grammar definition  *  *  *  */
@@ -169,14 +170,13 @@ stmt_seq: %empty                            {
                                               newQuad(GOTO, "NULL", "NULL", dest);
                                             }
       | variable ASSIGN simple_exp SEMI     {
+                                              union num_val value;
                                               if(($1->type == FLT) && ($3->type == FLT)) {
-                                                union num_val value;
                                                 value.float_value = $3->value.float_value;
 
                                                 newQuad(ASSIGNMENT, $3->name, NULL, $1->name);
                                               }
                                               else if(($1->type == INT)&& ($3->type == INT)) {
-                                                union num_val value;
                                                 value.integer_value = $3->value.integer_value;
 
                                                 newQuad(ASSIGNMENT, $3->name, NULL, $1->name);
@@ -456,8 +456,7 @@ factor: LPAREN exp RPAREN                   { $$ = $2; }
                                             }
       | FLOAT_NUM                           {
                                               entry_p node = malloc(sizeof(tableEntry));
-
-                                              node->name = malloc(sizeof(char *));
+                                              node->name = malloc(sizeof(char *)*(sizeof(long unsigned int)));
                                               node->type = FLT;
                                               node->value.float_value = $1;
                                               sprintf(node->name, "%f", $1);
