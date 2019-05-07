@@ -76,6 +76,9 @@ int errors = 0;
 %token DIV
 %token ASSIGN
 
+%nonassoc IF_CONFLICT
+%nonassoc ELSE
+
  /* Numbers */
 %token <intVal> INT_NUM
 %token <floatVal> FLOAT_NUM
@@ -87,7 +90,7 @@ int errors = 0;
 %type <intVal> type;
 %type <lineStruct_p> variable factor term simple_exp exp stmt_seq block stmt N M;
 
-%nonassoc IF
+
 %%
 
  /*  *  *  *  Grammar definition  *  *  *  */
@@ -122,7 +125,7 @@ stmt_seq: %empty                            {
                                             }
           ;
 
- stmt: IF exp THEN M stmt                   {
+ stmt: IF exp THEN M stmt %prec IF_CONFLICT N {
                                               /*
                                                * Code
                                                *    backpatch(E.t, M.quad)
