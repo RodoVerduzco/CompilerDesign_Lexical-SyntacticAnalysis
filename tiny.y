@@ -90,8 +90,6 @@ int errors = 0;
 %type <intVal> type;
 %type <lineStruct_p> variable factor term simple_exp exp stmt_seq block stmt N M;
 
-%nonassoc IF
-%nonassoc THEN
 %%
 
  /*  *  *  *  Grammar definition  *  *  *  */
