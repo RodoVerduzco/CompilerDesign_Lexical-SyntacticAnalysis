@@ -14,6 +14,7 @@
 %{
 
 #include "table.h"            // Helper file
+#include "interpreter.h"      // Helper file
 #define  YYERROR_VERBOSE
 
   /* Function definitions */
@@ -90,8 +91,6 @@ int errors = 0;
 %type <intVal> type;
 %type <lineStruct_p> variable factor term simple_exp exp stmt_seq block stmt N M;
 
-%nonassoc IF
-%nonassoc THEN
 %%
 
  /*  *  *  *  Grammar definition  *  *  *  */
@@ -540,8 +539,11 @@ int main (void) {
   // Print the table
   printTable();
 
-
+	// Print the Quads
   PrintQuads();
+
+	// Interpreter
+	Interpreter(quadList_p, symTable_p);
 
   // Destroy the hash table
   g_hash_table_destroy(symTable_p);
