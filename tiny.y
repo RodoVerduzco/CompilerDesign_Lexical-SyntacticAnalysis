@@ -545,6 +545,9 @@ int main (void) {
 	// Interpreter
 	Interpreter(quadList_p, symTable_p);
 
+	// Print the Quads
+  PrintQuads();
+	
   // Destroy the hash table
   g_hash_table_destroy(symTable_p);
   return(EXIT_SUCCESS);

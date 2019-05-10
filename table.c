@@ -340,67 +340,67 @@ char * opToString(int operation) {
   }
 }
 
-int program_index = 0;
+// int program_index = 0;
 
-void interpreter (GList * quad_list) {
+// void interpreter (GList * quad_list) {
 
-    if (quad_list == NULL) {
-        return;
-    }
+//     if (quad_list == NULL) {
+//         return;
+//     }
 
-    int length = g_list_length(quad_list);
-    quad_p quads[length];
+//     int length = g_list_length(quad_list);
+//     quad_p quads[length];
 
-    GList * temp = quad_list;
+//     GList * temp = quad_list;
 
-    // The quad list is passed to an array to reduce access time to each quad
-    do {
-        quad * q = (quad *) temp->data;
-        quads[q->addr] = q;
-    } while ( (temp = temp->next) != NULL );
+//     // The quad list is passed to an array to reduce access time to each quad
+//     do {
+//         quad * q = (quad *) temp->data;
+//         quads[q->addr] = q;
+//     } while ( (temp = temp->next) != NULL );
 
-    // Execute quads
-    execute_all_program(length, quads);
-    //free_quad_list_full(quad_list);
-}
+//     // Execute quads
+//     execute_all_program(length, quads);
+//     //free_quad_list_full(quad_list);
+// }
 
-// Run the quad array based on the program index (this indicates the quad to be executed)
-void execute_all_program (int length, quad_p quads[]) {
-    while (program_index < length) {
-        execute_quad(quads[program_index]);
-    }
-}
+// // Run the quad array based on the program index (this indicates the quad to be executed)
+// void execute_all_program (int length, quad_p quads[]) {
+//     while (program_index < length) {
+//         execute_quad(quads[program_index]);
+//     }
+// }
 
-void execute_quad (quad_p q) {
-    switch(q->op) {
-        case ADDITION:
-            //addition operation
-            break;
-        case SUBSTRACTION:
-            //substraction operation
-            break;
-        case MULTIPLICATION:
-            //multiplication operation
-            break;
-        case DIVISION:
-            //division operation
-            break;
-        case LT_GOTO:
-            //less than operation
-            break;
-        case GT_GOTO:
-            //greater than operation
-            break;
-        case EQ_GOTO:
-            //equal tan operation
-            break;
-        case GOTO:
-            //Jump
-            break;
-        case ASSIGNMENT:
-            //Assign
-            break;
-        default:
-            printf("[CRITICAL ERROR]\n");
-    }
-}
+// void execute_quad (quad_p q) {
+//     switch(q->op) {
+//         case ADDITION:
+//             //addition operation
+//             break;
+//         case SUBSTRACTION:
+//             //substraction operation
+//             break;
+//         case MULTIPLICATION:
+//             //multiplication operation
+//             break;
+//         case DIVISION:
+//             //division operation
+//             break;
+//         case LT_GOTO:
+//             //less than operation
+//             break;
+//         case GT_GOTO:
+//             //greater than operation
+//             break;
+//         case EQ_GOTO:
+//             //equal tan operation
+//             break;
+//         case GOTO:
+//             //Jump
+//             break;
+//         case ASSIGNMENT:
+//             //Assign
+//             break;
+//         default:
+//             printf("[CRITICAL ERROR]\n");
+//     }
+// }

@@ -269,6 +269,6 @@ GList * mergeList(GList * list1, GList * list2);
 
 line_p convertToLineStruct(entry_p node);
 
-void execute_all_program (int length, quad_p quads[]);
+// void execute_all_program (int length, quad_p quads[]);
 
-void execute_quad (quad_p q);
+// void execute_quad (quad_p q);

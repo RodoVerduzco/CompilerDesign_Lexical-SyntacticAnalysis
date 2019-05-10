@@ -9,4 +9,6 @@
 
 int Interpreter(GList *quadList_p, GHashTable *symTable_p);
 
-int GotoLine(char *g);
+int GOTO_QUAD(char *g);
+
+// void PrintQuadItemValue(entry_p aEntry);
