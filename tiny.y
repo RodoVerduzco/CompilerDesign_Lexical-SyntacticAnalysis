@@ -518,7 +518,7 @@ int yylex();
 void yyerror (char const * string) {
   char * stderr;
   printf ("ERROR: %s in line %d\n", string, line);
-  //exit(EXIT_FAILURE);
+  // exit(EXIT_FAILURE);
 }
 
 void typeError(int line, line_p data){

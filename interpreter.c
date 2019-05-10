@@ -26,7 +26,8 @@ void errorAtInterpreter()
 
 void errorDivisionByZero()
 {
-    printf("ERROR: Division by zero in QUAD = %d", i);
+    printf("ERROR: Division by zero in QUAD = %d\n", i);
+    printf("Interpreter terminated...\n\n");
     exit(0);
     return;
 }

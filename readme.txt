@@ -27,4 +27,9 @@
 * 	Use the Makefile.sh
 * 	Execute with:
 * 		./Makefile.sh
+* 	or manually:
+* 		bison -d tiny.y -Wall -Wother	
+*			flex tiny.l	
+*			gcc -O2 -o tiny -DYACC table.h table.c interpreter.h interpreter.c tiny.tab.c `pkg-config --cflags --libs glib-2.0` -lfl -O2	
+*			rm tiny.tab.c tiny.tab.h
 */
