@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-int Interpreter(GList *quadList_p, GHashTable *symTable_p);
+int Interpreter(GList* quadList_p, GHashTable* symTable_p);
 
-int GOTO_QUAD(char *g);
+int GOTO_QUAD(char* nexQuad);
 
 // void PrintQuadItemValue(entry_p aEntry);

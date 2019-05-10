@@ -1,0 +1,14 @@
+/* Definitions go first */
+
+int myA;
+float myB;
+float myC;
+
+/* There is no "main" program,
+   just blocks */
+{
+ myA := 5;
+ myB := 10.4;
+// BREAKS ON float := int + float
+ myC := myA+myB;
+}

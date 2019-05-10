@@ -1,29 +1,23 @@
 /* Definitions go first */
 
+int myA;
+float myB;
+float myC;
+
 int j;
 float i;
 int h;
 int j1;
-int i1;
-int h1;
+
 float j2;
 int i2;
 int h2;
-int j3;
-int i3;
 int h3;
-int j4;
-int i4;
 int h4;
-float j5;
-int i5;
-int h5;
-int j6;
-int i6;
+
 int h6;
-int j7;
-int i7;
-int h7;
+
+float i7;
 
 /* There is no "main" program,
    just blocks */
@@ -32,10 +26,12 @@ int h7;
  i := 10.4;
  j1 := 0;
  h4 := 6;
-
-  while (j1<5) do {
+ // WOrks on float := float + float
+ i7 := i + h6;
+  while (j1<3) do {
     // j := i2*10;
     // j1 := i+2;
+		//WORKS on int := int + int
     j1 := j1+1;
   }
 
@@ -50,4 +46,12 @@ int h7;
  i := j/i;
  h2 := h / h3;
  i := 100*h;
+ // works on float := int + int
+ j2:= j+h3;
+
+ // myA := 5;
+ // myB := 10.4;
+// BREAKS ON float := int + float
+ // myC := myA+myB;
+
 }
